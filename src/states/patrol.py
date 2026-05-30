@@ -5,11 +5,14 @@ import random
 from src.states.base_state import State
 
 class PatrolState(State):
+    '''
+    patrol 모드: normal 처럼 미니맵 루트(route*.png)를 따라 이동하되,
+    몹 검출(템플릿 매칭) 대신 주기적으로 공격한다.
+    배경이 몹과 비슷해 템플릿 매칭이 불가한 맵에서 안정적으로 사냥하기 위함.
+    '''
     def __init__(self, name, bot):
         super().__init__(name, bot)
         self.bot = bot
-        self.is_patrol_to_left = True # Patrol direction flag
-        self.patrol_turn_point_cnt = 0 # Patrol tuning back counter
         self.next_attack_delay = None # 다음 공격까지 목표 간격(랜덤 지터 포함)
 
     def _roll_attack_delay(self):
@@ -28,31 +31,13 @@ class PatrolState(State):
         return None
 
     def on_frame(self):
-        x, y = self.bot.loc_player
-        h, w = self.bot.img_frame.shape[:2]
-        loc_player_ratio = float(x)/float(w)
-        left_ratio, right_ratio = self.bot.cfg["patrol"]["range"]
+        # 루트 따라 이동 (normal 모드와 동일)
+        self.bot.update_cmd_by_route()
 
-        # Check if we need to change patrol direction
-        if self.is_patrol_to_left and loc_player_ratio < left_ratio:
-            self.patrol_turn_point_cnt += 1
-        elif (not self.is_patrol_to_left) and loc_player_ratio > right_ratio:
-            self.patrol_turn_point_cnt += 1
+        # 루트 목표 지점 도달 시 다음 루트로 순환
+        self.bot.check_reach_goal()
 
-        if self.patrol_turn_point_cnt > self.bot.cfg["patrol"]["turn_point_thres"]:
-            self.is_patrol_to_left = not self.is_patrol_to_left
-            self.patrol_turn_point_cnt = 0
-
-        # Update cmd_move_x
-        if self.is_patrol_to_left:
-            self.bot.cmd_move_x = "left"
-        else:
-            self.bot.cmd_move_x = "right"
-
-        # Update attack commend by detecting mobs near players
-        self.bot.update_cmd_by_mob_detection()
-
-        # Update attack commend by periodically attack (랜덤 지터 적용)
+        # 몹 검출 대신 주기적으로 공격 (랜덤 지터 적용)
         if self.next_attack_delay is None:
             self.next_attack_delay = self._roll_attack_delay()
         if time.time() - self.bot.t_last_attack > self.next_attack_delay:
@@ -60,7 +45,7 @@ class PatrolState(State):
             self.bot.t_last_attack = time.time()
             self.next_attack_delay = self._roll_attack_delay() # 다음 간격 새로 추첨
 
-        # If player stuck for too long, perform a random command
+        # 끼임 방지: 너무 오래 멈춰있으면 랜덤 명령
         if self.bot.is_player_stuck():
             self.bot.update_cmd_by_random()
 

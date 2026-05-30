@@ -145,7 +145,8 @@ class MapleStoryAutoBot:
             for k, v in cfg["route"]["color_code_up_down"].items()
         }
 
-        if cfg["bot"]["mode"] == "normal":
+        # normal 과 patrol 둘 다 미니맵/루트 기반으로 이동 (patrol 은 몹 검출 대신 주기 공격)
+        if cfg["bot"]["mode"] in ("normal", "patrol"):
             map_name = cfg['bot']['map']
             # Check if the map is supported in config_data.yaml
             if map_name not in self.data["map_mobs_mapping"]:
@@ -1102,8 +1103,8 @@ class MapleStoryAutoBot:
             (0, 0, 255), "minimap",thickness=2
         )
 
-        # Don't draw minimap in patrol mode
-        if self.cfg["bot"]["mode"] in ["patrol", "aux"]:
+        # aux 모드만 루트 미니맵 크롭을 그리지 않음 (normal/patrol 은 루트 추종이라 표시)
+        if self.cfg["bot"]["mode"] == "aux":
             return
 
         # Compute crop region with boundary check
@@ -1561,8 +1562,8 @@ class MapleStoryAutoBot:
         if self.is_show_debug_window:
             self.img_frame_debug = self.img_frame.copy()
 
-        # Get current route image
-        if self.cfg["bot"]["mode"] == "normal":
+        # Get current route image (normal + patrol)
+        if self.cfg["bot"]["mode"] in ("normal", "patrol"):
             self.img_route = self.img_routes[self.idx_routes]
             if self.is_show_debug_window:
                 self.img_route_debug = cv2.cvtColor(self.img_route, cv2.COLOR_RGB2BGR)
@@ -1664,7 +1665,8 @@ class MapleStoryAutoBot:
         #     debug_minimap_colors(self.img_minimap, other_player_color)
 
         # Get player location on global map
-        if self.cfg["bot"]["mode"] in ["patrol", "aux"]:
+        # aux 만 미니맵 좌표 그대로 사용. normal/patrol 은 글로벌 맵 정합으로 루트 추종.
+        if self.cfg["bot"]["mode"] == "aux":
             self.loc_player_global = self.loc_player_minimap
         else:
             self.loc_player_global = self.get_player_location_on_global_map()
@@ -1739,8 +1741,8 @@ class MapleStoryAutoBot:
         if self.video_writer:
             self.video_writer.write(self.img_frame_debug)
 
-        # Resize img_route_debug for better visualization
-        if self.cfg["bot"]["mode"] == "normal":
+        # Resize img_route_debug for better visualization (normal + patrol)
+        if self.cfg["bot"]["mode"] in ("normal", "patrol"):
             self.img_route_debug = cv2.resize(
                         self.img_route_debug, (0, 0),
                         fx=self.cfg["minimap"]["debug_window_upscale"],
