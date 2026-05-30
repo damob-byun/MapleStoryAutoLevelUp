@@ -2,7 +2,7 @@
 # The following configuration is only for macOS
 
 game_window:
-  size: [691, 1280]
+  size: [487, 960]
   title_bar_height: 85         # 📐 Title Bar Height (Note titel bar will be cropped before window resize)
 
 monster_detect:

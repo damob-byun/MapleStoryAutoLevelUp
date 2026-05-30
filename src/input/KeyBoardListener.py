@@ -5,11 +5,16 @@ KeyBoardListener for routeRecorder.py
 import threading
 import time
 
-import pygetwindow as gw
 from pynput import keyboard
 
 # Local import
 from src.utils.logger import logger
+from src.utils.common import is_mac
+
+if is_mac():
+    import Quartz
+else:
+    import pygetwindow as gw
 
 class KeyBoardListener():
     '''
@@ -135,8 +140,23 @@ class KeyBoardListener():
         - True
         - False
         '''
-        active_window = gw.getActiveWindow()
-        return active_window is not None and self.window_title in active_window.title
+        if is_mac():
+            window_list = Quartz.CGWindowListCopyWindowInfo(
+                Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+                Quartz.kCGNullWindowID
+            )
+            for window in window_list:
+                window_name = window.get(Quartz.kCGWindowName, '')
+                if window_name and self.window_title in window_name:
+                    return True
+            return False
+        try:
+            active_window = gw.getActiveWindow()
+            if not active_window:
+                return False
+            return self.window_title in active_window.title
+        except Exception:
+            return False
 
     def limit_fps(self):
         '''

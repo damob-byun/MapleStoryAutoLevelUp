@@ -1,335 +1,335 @@
-# ====== Default Configuration ======
-# DO NOT directly modify the following parameters
-# Put your own setting in config_edit_me.yaml instead.
+# ====== 기본 설정 (Default Configuration) ======
+# 아래 파라미터를 직접 수정하지 마세요.
+# 본인 설정은 config_edit_me.yaml 에 따로 작성하세요.
 # --------------------------------------
 
 bot:
-  # 🔁 Bot Settings
-  mode: "normal"        # Options: "normal" "aux" "patrol"
-  attack: "directional" # Options: "aoe_skill" "directional"
-  map: "" # Please refer to config/config_data.yaml
+  # 🔁 봇 설정
+  mode: "normal"        # 선택지: "normal" "aux" "patrol"
+  attack: "directional" # 선택지: "aoe_skill" "directional"
+  map: "" # config/config_data.yaml 참고
 
 key:
-  # 🎮 Keyboard Mapping
-  # Adjust the keys to match your in-game keybindings.
+  # 🎮 키보드 매핑
+  # 게임 내 키 설정에 맞게 조정하세요.
   #
-  # Examples:
-  #   - "q":      Presses key Q
-  #   - "space":  Space bar
-  #   - "1":      Number key 1
-  #   - "ctrl":   Control key
-  #   - "alt":    Alt key
-  #   - "shift":  Shift key
-  aoe_skill: "q"            # 💥 AoE skill (e.g., Cleric's heal or Mage's lightning)
-  directional_attack: "w"   # ⚔️ Basic directional attack (e.g., Magic Claw or throwing stars)
-  teleport: "e"             # 🌀 Teleport skill. Set to "" if not usable
-  jump: "space"             # 🦘 Jump key
-  add_hp: "1"               # ❤️ Use HP potion. Set to "" to disable auto-healing
-  add_mp: "2"               # 💧 Use MP potion. Set to "" to disable auto-mana
-  return_home: "home"       # 🔁 Key to use return home scroll.
-  party: "p"                # ⌨️ Party window shortcut
+  # 예시:
+  #   - "q":      Q 키
+  #   - "space":  스페이스바
+  #   - "1":      숫자 키 1
+  #   - "ctrl":   컨트롤 키
+  #   - "alt":    Alt 키
+  #   - "shift":  Shift 키
+  aoe_skill: "q"            # 💥 광역 스킬 (예: 클레릭의 힐, 마법사의 라이트닝)
+  directional_attack: "w"   # ⚔️ 기본 방향 공격 (예: 매직 클로, 표창 던지기)
+  teleport: "e"             # 🌀 텔레포트 스킬. 사용 불가하면 "" 로 설정
+  jump: "space"             # 🦘 점프 키
+  add_hp: "1"               # ❤️ HP 포션 사용. 자동 회복 끄려면 "" 로 설정
+  add_mp: "2"               # 💧 MP 포션 사용. 자동 MP 끄려면 "" 로 설정
+  return_home: "home"       # 🔁 귀환 주문서 사용 키
+  party: "p"                # ⌨️ 파티창 단축키
 
 buff_skill:
-  # 💫 Buff Skill
-  # Automatically apply buff skills when the cooldowns are ready.
-  # Buff skills are like: Mage's Magic Guard, Cleric's Angel's Blessing, Thief's Speed Boost
-  # ⚠️ Note: If your have a pet to apply buff for you, you can ignore this.
-  keys: []                # ⌨️ List of keys to cast each buff skill (e.g., ["a", "s"])
-  cooldown: []            # ⏱️ Cooldown time (in seconds), matches the order of `keys`
-  action_cooldown: 1      # 🕒 Delay (in seconds) after buffing before continuing actions
+  # 💫 버프 스킬
+  # 쿨다운이 끝나면 자동으로 버프 스킬을 사용합니다.
+  # 버프 스킬 예: 마법사의 매직 가드, 클레릭의 엔젤 블레스, 도적의 스피드 부스트
+  # ⚠️ 참고: 버프를 대신 걸어주는 펫이 있다면 무시해도 됩니다.
+  keys: []                # ⌨️ 각 버프 스킬을 사용할 키 목록 (예: ["a", "s"])
+  cooldown: []            # ⏱️ 쿨다운(초). `keys` 순서와 일치
+  action_cooldown: 1      # 🕒 버프 후 다음 동작까지의 지연(초)
 
 directional_attack:
-  # 🗡️ Directional Attack
-  # Directional attacks are basic attack/skills that only attack player left or right.
-  # For examples, Mage’s Magic Claw, Thief’s dart throw, or even a snail shell toss are all directional attack
-  range_x: 350               # ↔️ Horizontal attack range (in pixels)
-  range_y: 70                # ↕️ Vertical attack range (in pixels)
-  cooldown: 0.9              # ⏱️ Time between attacks (in seconds)
-  character_turn_delay: 0.02 # 🔄 Delay after turning before attacking (in seconds)
+  # 🗡️ 방향 공격
+  # 방향 공격은 캐릭터 좌/우 방향으로만 공격하는 기본 공격/스킬입니다.
+  # 예: 마법사의 매직 클로, 도적의 표창 던지기, 달팽이 껍데기 던지기 등.
+  range_x: 350               # ↔️ 가로 공격 범위 (픽셀)
+  range_y: 70                # ↕️ 세로 공격 범위 (픽셀)
+  cooldown: 0.9              # ⏱️ 공격 간 시간 간격 (초)
+  character_turn_delay: 0.02 # 🔄 방향 전환 후 공격까지의 지연 (초)
 
 aoe_skill:
-  # 💥 AoE Skill
-  # AoE (Area of Effect) skills hit enemies no matter which direction the chrarcter is facing.
-  # For examples: Cleric’s Heal, Holy light, Mage’s Lightning Bolt are all AOE skills 
-  range_x: 400               # ↔️ Horizontal skill range (in pixels)
-  range_y: 170               # ↕️ Vertical skill range (in pixels)
-  cooldown: 0.05             # TODO: Currently just a filler
+  # 💥 광역 스킬 (AoE)
+  # AoE(범위) 스킬은 캐릭터가 어느 방향을 보든 적을 타격합니다.
+  # 예: 클레릭의 힐/홀리 라이트, 마법사의 라이트닝 볼트 등.
+  range_x: 400               # ↔️ 가로 스킬 범위 (픽셀)
+  range_y: 170               # ↕️ 세로 스킬 범위 (픽셀)
+  cooldown: 0.05             # TODO: 아직 자리만 차지함
 
 health_monitor:
-  # ❤️ Health Monitor
-  # Automatically drinks HP/MP potions when health or mana drops below a threshold.
-  # ⚠️ If your pet already handles auto-healing, you can disable this.
-  enable: True             # ✅ Enable or disable health monitor
-  force_heal: False        # 🛡️ Heal first — stop attacking until HP is restored
-  add_hp_percent: 50       # ❤️ Drink HP potion when HP drops below this ratio [0.0 ~ 1.0]
-  add_mp_percent: 50       # 💙 Drink MP potion when MP drops below this ratio [0.0 ~ 1.0]
-  add_hp_cooldown: 0.5     # 🕒 Seconds to wait between HP potions, prevent potion spam
-  add_mp_cooldown: 0.5     # 🕒 Seconds to wait between MP potions, prevent potion spam
-  fps_limit: 20            # 🚥 Loop rate for the health monitor thread
-  return_home_if_no_potion: False      # ✅ Use homing scroll when potion is used up
-  return_home_watch_dog_timeout: 3     # 🕒 Duration to detect HP is lower than "add_hp_percent"
+  # ❤️ 체력 모니터
+  # HP/MP가 임계값 아래로 떨어지면 자동으로 포션을 사용합니다.
+  # ⚠️ 펫이 이미 자동 회복을 처리한다면 비활성화해도 됩니다.
+  enable: True             # ✅ 체력 모니터 활성/비활성
+  force_heal: False        # 🛡️ 회복 우선 — HP 회복 전까지 공격 중단
+  add_hp_percent: 50       # ❤️ HP가 이 비율 아래로 내려가면 HP 포션 사용 [0.0 ~ 1.0]
+  add_mp_percent: 50       # 💙 MP가 이 비율 아래로 내려가면 MP 포션 사용 [0.0 ~ 1.0]
+  add_hp_cooldown: 0.5     # 🕒 HP 포션 간 대기 시간(초). 포션 남용 방지
+  add_mp_cooldown: 0.5     # 🕒 MP 포션 간 대기 시간(초). 포션 남용 방지
+  fps_limit: 20            # 🚥 체력 모니터 스레드의 루프 속도
+  return_home_if_no_potion: False      # ✅ 포션이 떨어지면 귀환 주문서 사용
+  return_home_watch_dog_timeout: 3     # 🕒 HP가 "add_hp_percent" 이하임을 감지할 지속 시간
 
 teleport:
-  # 🌀 Mage Teleport
-  # This feature lets Mages use teleport to move faster while walking.
-  # ⚠️ Still experimental! Enabling it may cause unexpected issues.
-  is_use_teleport_to_walk: False  # ✅ Use teleport while walking (may cause inaccurate pathing)
-  cooldown: 1                     # ⏱️ Teleport skill cooldown (in seconds)
+  # 🌀 마법사 텔레포트
+  # 마법사가 걷는 대신 텔레포트로 더 빠르게 이동하도록 합니다.
+  # ⚠️ 아직 실험적 기능입니다! 활성화 시 예기치 못한 문제가 생길 수 있음.
+  is_use_teleport_to_walk: False  # ✅ 걷는 대신 텔레포트 사용 (경로가 부정확해질 수 있음)
+  cooldown: 1                     # ⏱️ 텔레포트 스킬 쿨다운 (초)
 
 edge_teleport:
-  # 🧙‍♂️ Edge Teleport
-  # When your character approaches the edge of a platform, teleport to the platform center.
-  # If your character isn't a Mage, it will perform a jump instead.
-  enable: True                 # ✅ Enable or disable this feature
-  trigger_box_width: 20        # ↔️ Width of the edge detection box (in pixels)
-  trigger_box_height: 10       # ↕️ Height of the edge detection box (in pixels)
-  color_code: [255, 127, 127]  # 🎨 RGB color code to represent platform edge
+  # 🧙‍♂️ 가장자리 텔레포트
+  # 캐릭터가 발판 끝에 다가가면 발판 중앙으로 텔레포트합니다.
+  # 마법사가 아니라면 점프로 대체됩니다.
+  enable: True                 # ✅ 기능 활성/비활성
+  trigger_box_width: 20        # ↔️ 가장자리 감지 박스 너비 (픽셀)
+  trigger_box_height: 10       # ↕️ 가장자리 감지 박스 높이 (픽셀)
+  color_code: [255, 127, 127]  # 🎨 발판 가장자리를 나타내는 RGB 색상 코드
 
 party_red_bar:
-  # ❤️ Party Red Bar Detection
-  # Detects your character's party red on on the game window to estimate player location.
-  # This feature will only turn on when nametag.enable == False
-  lower_red: [0, 60, 60]   # ❤️ HSV, darker red of party health bar
-  upper_red: [0, 100, 100] # ❤️ HSV, brighter red of party health bar
-  offset: [20, 66]         # 🎯 Offset from the top-left corner of the party red bar to the character center
-  create_party_button_cn_thres: 0.04   # 📏 threshold for create party button matching
-  create_party_button_eng_thres: 0.04 # 📏 threshold for create party button matching
+  # ❤️ 파티 빨간 바 감지
+  # 게임 창에서 본인 캐릭터의 파티 빨간 바를 감지해 위치를 추정합니다.
+  # 이 기능은 nametag.enable == False 일 때만 동작합니다.
+  lower_red: [0, 60, 60]   # ❤️ HSV. 파티 체력 바의 어두운 빨강
+  upper_red: [0, 100, 100] # ❤️ HSV. 파티 체력 바의 밝은 빨강
+  offset: [20, 66]         # 🎯 파티 빨간 바 좌상단에서 캐릭터 중심까지의 오프셋
+  create_party_button_cn_thres: 0.04   # 📏 파티 생성 버튼 매칭 임계값 (중국어)
+  create_party_button_eng_thres: 0.04  # 📏 파티 생성 버튼 매칭 임계값 (영어)
 
 nametag:
-  # 🏷️ NameTag Recognition
-  # ⚠️ This feature is deprecated, using party red bar is way better than detecting nametag.
-  # Detects your character's nametag on the game window to estimate player location.
-  enable: False   # ✅ Only switch back to 'True' when party red bar detection doesn't work for you
-  name: "example" # Load nametag/<name>.png as nametag template
-  mode: "grayscale"  # 🧪 Comparison mode for matching the nametag, Options: "grayscale" "white_mask" "histogram_eq"
-  offset: [-50, 30]  # 🎯 Pixel offset from the top-left corner of the matched nametag to the character center 
-  diff_thres: 0.2     # 📏 Matching threshold, [0.0 ~ 1.0] — lower = more tolerant, higher = stricter
+  # 🏷️ 네임택 인식
+  # ⚠️ 이 기능은 deprecated. 파티 빨간 바 감지가 훨씬 안정적입니다.
+  # 게임 창에서 본인 캐릭터의 네임택을 감지해 위치를 추정합니다.
+  enable: False   # ✅ 파티 빨간 바 감지가 동작하지 않을 때만 'True'로 변경
+  name: "example" # nametag/<name>.png 를 템플릿으로 로드
+  mode: "grayscale"  # 🧪 네임택 매칭 방식. 선택지: "grayscale" "white_mask" "histogram_eq"
+  offset: [-50, 30]  # 🎯 매칭된 네임택 좌상단에서 캐릭터 중심까지의 픽셀 오프셋
+  diff_thres: 0.2     # 📏 매칭 임계값 [0.0 ~ 1.0]. 낮을수록 관대, 높을수록 엄격
 
-  global_diff_thres: 0.2  # 🧠 Global detection fallback
-  # If the diff is higher than this threshold, do a full-frame search.
-  # If lower, search near the last known location to save time.
-  # Set to 0.0 to disable this optimization
+  global_diff_thres: 0.2  # 🧠 전역 탐색 폴백
+  # 차이값이 이 임계값보다 크면 전체 프레임을 탐색.
+  # 작으면 마지막 위치 근처만 탐색하여 시간 절약.
+  # 0.0 으로 설정하면 이 최적화 비활성화.
 
-  split_width: 30  # ✂️ pixels width of each vertical split
-  # To avoid occlusion from ladders or background objects,
-  # the nametag will be split vertically and matched in smaller parts.
+  split_width: 30  # ✂️ 각 세로 분할 너비(픽셀)
+  # 사다리나 배경 오브젝트에 의한 가림을 줄이기 위해
+  # 네임택을 세로로 분할해 작은 단위로 매칭함.
 
 character:
-  # 🧍 Character
-  # Your character's size in pixels.
-  # ⚠️ Only used if monster_detect.mode is set to "template_free" —
-  #    you can ignore this if using other detection modes.
-  width: 100      # ↔️ Character width (in pixels)
-  height: 150     # ↕️ Character height (in pixels)
+  # 🧍 캐릭터
+  # 캐릭터의 픽셀 크기.
+  # ⚠️ monster_detect.mode 가 "template_free" 일 때만 사용됨.
+  #    다른 검출 모드를 쓴다면 무시 가능.
+  width: 100      # ↔️ 캐릭터 너비 (픽셀)
+  height: 150     # ↕️ 캐릭터 높이 (픽셀)
 
 monster_detect:
-  # 🐌 Monster Detection
-  # Automatically detect monsters around your character.
-  # Detection mode determines the method used to find monsters.
-  # Modes ranked from most to least computational cost:
-  #   - "color"         (most accurate but slowest)
-  #   - "grayscale"     (slow)
-  #   - "contour_only"  (fast, contour-based, a good balance)
-  #   - "template_free" (lightest and fastest, but likely to have many wrong detection)
-  # 💡 Feel free to test different modes to find what works best for your setup.
-  mode: "contour_only"         # 🧠 Options: "color" "grayscale" "contour_only" "template_free"
-  diff_thres: 0.8              # 📏 Diff threshold for template matching, [0.0 ~ 1.0] Lower = stricter match
-  search_box_margin: 50        # ➕ Additional margin(in pixels) around the attack box for monster searching
-  contour_blur: 5              # 🌫️ Gaussian blur kernel size used for contour smoothing (in "contour_only" mode).
-  with_enemy_hp_bar: True      # ❤️ Enable smarter detection using enemy HP bars.
-  hp_bar_color: [71, 204, 64]  # 💚 Enemy HP bar color (in BGR format)
-  max_mob_area_trigger: 1500   # 📏 How much does the mob need to overlap with attack range to be considered as a target
+  # 🐌 몬스터 감지
+  # 캐릭터 주변의 몬스터를 자동으로 감지합니다.
+  # 감지 모드에 따라 몬스터를 찾는 방식이 달라집니다.
+  # 연산 비용이 높은 순서:
+  #   - "color"         (가장 정확하지만 가장 느림)
+  #   - "grayscale"     (느림)
+  #   - "contour_only"  (빠름, 외곽선 기반, 균형 좋음)
+  #   - "template_free" (가장 가볍고 빠름. 단, 오탐 가능성 높음)
+  # 💡 환경에 맞춰 여러 모드를 시도해 보세요.
+  mode: "contour_only"         # 🧠 선택지: "color" "grayscale" "contour_only" "template_free"
+  diff_thres: 0.8              # 📏 템플릿 매칭 차이 임계값 [0.0 ~ 1.0]. 낮을수록 엄격
+  search_box_margin: 50        # ➕ 공격 박스 주변 몬스터 탐색 마진 (픽셀)
+  contour_blur: 5              # 🌫️ 외곽선 스무딩용 가우시안 블러 커널 크기 ("contour_only" 모드에서 사용)
+  with_enemy_hp_bar: True      # ❤️ 적 HP 바를 활용한 추가 감지 사용
+  hp_bar_color: [71, 204, 64]  # 💚 적 HP 바 색상 (BGR 포맷)
+  max_mob_area_trigger: 1500   # 📏 공격 범위와의 겹침 면적이 이 값 이상이어야 타깃으로 인정
 
 channel_change:
-  # 🔁 Auto change channel when other player detected
-  # "true": Change channel once other player is detected
-  # "pixel": Change channel once other player move set pixels in other_player_move_pixel
+  # 🔁 다른 유저가 감지되면 채널 자동 변경
+  # "true": 다른 유저가 감지되는 즉시 채널 변경
+  # "pixel": other_player_move_thres 픽셀만큼 다른 유저가 이동하면 채널 변경
   enable: False                # ✅
-  mode: "pixel"                # 🧠 Options: "true" "pixel"
-  other_player_move_thres: 10  # 📏 only work in "pixel" mode
+  mode: "pixel"                # 🧠 선택지: "true" "pixel"
+  other_player_move_thres: 10  # 📏 "pixel" 모드에서만 동작
 
 scheduled_channel_switching:
-  # Schduel for channel swithcing
-  enable: False            # Enable this feature or not
-  interval_seconds: 1800   # Switch channel for every <interval_seconds> second
+  # 채널 자동 전환 스케줄
+  enable: False            # 기능 활성/비활성
+  interval_seconds: 1800   # <interval_seconds> 초마다 채널 전환
 
 ui_coords:
-  # 🧭 UI Coordinate
-  # Buttons and menu cooridinate in game window
-  # Expect all these coordinate is on orignal window size (get it from frame screenshot)
-  ui_y_start: 610                       # 📐 UI y start
-  "menu": [1140, 730]                   # 📐 Menu coordinate on game window UI
-  "channel": [1140, 666]                # 📐 Channel button coordinate
-  "random_channel": [877, 161]          # 📐 Random channel button in the channel selection menu
-  "random_channel_confirm": [585, 420]  # 📐 Confirm button after clicking channel switch
-  "select_character": [888, 275]        # 📐 Select character button during login
-  login_button_thres: 0.05              # 📏 threshold to detect a login button on game window
-  login_button_top_left: [838, 317]     # 📐 top left corner of login button search ragne
-  login_button_bottom_right: [940, 373] # 📐 bottom right corner of login button search ragne
+  # 🧭 UI 좌표
+  # 게임 창 내 버튼/메뉴 좌표
+  # 모든 좌표는 원본 창 크기 기준 (프레임 스크린샷에서 얻은 값)
+  ui_y_start: 610                       # 📐 UI 시작 Y 좌표
+  "menu": [1140, 730]                   # 📐 게임 창 UI의 메뉴 좌표
+  "channel": [1140, 666]                # 📐 채널 버튼 좌표
+  "random_channel": [877, 161]          # 📐 채널 선택 메뉴의 랜덤 채널 버튼
+  "random_channel_confirm": [585, 420]  # 📐 채널 변경 확인 버튼
+  "select_character": [888, 275]        # 📐 로그인 시 캐릭터 선택 버튼
+  login_button_thres: 0.05              # 📏 게임 창의 로그인 버튼 감지 임계값
+  login_button_top_left: [838, 317]     # 📐 로그인 버튼 탐색 영역 좌상단
+  login_button_bottom_right: [940, 373] # 📐 로그인 버튼 탐색 영역 우하단
 
 route:
-  # 🧭 Route Following
-  # The character follows a pre-defined route image (route*.png) using color-coded commands.
-  search_range: 10            # 🔍 Radius (in pixels) to search for the nearest route color around the player
-  jump_down_cooldown: 3.0     # ⏱️ Cooldown (in seconds) for 'jump down' action to prevent continuous descent
+  # 🧭 루트 추종
+  # 캐릭터는 색상 코드 명령이 그려진 미리 정의된 루트 이미지(route*.png)를 따라 이동합니다.
+  search_range: 10            # 🔍 플레이어 주변에서 가장 가까운 루트 색상을 탐색할 반경 (픽셀)
+  jump_down_cooldown: 3.0     # ⏱️ 연속 하강 방지를 위한 '점프 다운' 쿨다운 (초)
 
-  # 🎨 Color-coded(RGB) actions for route navigation
-  # "<left-right command, up-down command, action>"
+  # 🎨 루트 내비게이션용 색상 코드(RGB) → 동작
+  # "<좌-우 명령, 상-하 명령, 액션>"
   color_code:
-    "255,0,0": "left none none"         # 🔴 Red
-    "0,0,255": "right none none"        # 🔵 Blue
-    "255,127,0": "left none jump"       # 🟠 Orange
-    "0,255,255": "right none jump"      # 🟦 Cyan
-    "127,255,0": "none down jump"       # 💚 Lime
-    "255,0,255": "none none jump"       # 💜 Magenta
-    "0,255,127": "stop stop stop"       # 🟢 Light green
-    "255,255,0": "none none goal"       # 🟨 Yellow
-    "255,0,127": "none up teleport"     # 🌸 Pink
-    "127,0,255": "none down teleport"   # 🟪 Purple
-    "0,127,0": "left none teleport"     # 🟩 Dark green
-    "139,69,19": "right none teleport"  # 🟫 Brown
+    "255,0,0": "left none none"         # 🔴 빨강
+    "0,0,255": "right none none"        # 🔵 파랑
+    "255,127,0": "left none jump"       # 🟠 주황
+    "0,255,255": "right none jump"      # 🟦 청록
+    "127,255,0": "none down jump"       # 💚 라임
+    "255,0,255": "none none jump"       # 💜 마젠타
+    "0,255,127": "stop stop stop"       # 🟢 연두
+    "255,255,0": "none none goal"       # 🟨 노랑
+    "255,0,127": "none up teleport"     # 🌸 핑크
+    "127,0,255": "none down teleport"   # 🟪 보라
+    "0,127,0": "left none teleport"     # 🟩 진녹색
+    "139,69,19": "right none teleport"  # 🟫 갈색
 
-  # 🎨 Color-coded(RGB) actions for up and down
+  # 🎨 상/하 이동용 색상 코드(RGB)
   color_code_up_down:
-    "127,127,127": "none up none"       # ⚪ Gray
-    "255,255,127": "none down none"     # 🟡 Light yellow
+    "127,127,127": "none up none"       # ⚪ 회색
+    "255,255,127": "none down none"     # 🟡 연노랑
 
 watchdog:
-  # 🐶 Watchdog
-  # This feature monitors your character's movement.
-  # If the player stays in the same spot for too long, the watchdog will "bark"
-  # and trigger a random action (defined in `color_code`) to help break the stuck state.
-  # The other feature is last attack watch dog. It check if the player doesn't attack for too long.
-  # If so, consider the player is stuck and perform recovery action 
-  range: 10            # 🥶 Movement threshold (in pixels). If the player moves less than this, it's considered stuck.
-  timeout: 10          # ⏱️ Time limit (in seconds). If the player stays still for this long, a random action is triggered.
-  last_attack_timeout: 1200 # ⏳ Maximum time (in seconds) to not perform attack action
-  last_attack_timeout_action: "change_channel" # 🧠 Options: "go_home" "change_channel"
+  # 🐶 워치독
+  # 캐릭터의 움직임을 감시합니다.
+  # 일정 시간 같은 자리에 머무르면 워치독이 "짖어서"
+  # 무작위 동작(`color_code`에 정의된)을 트리거해 끼임 상태를 해제합니다.
+  # 또 하나의 기능은 마지막 공격 워치독으로, 너무 오래 공격하지 않으면
+  # 끼인 상태로 간주해 복구 동작을 수행합니다.
+  range: 10            # 🥶 이동 임계값(픽셀). 이보다 적게 움직이면 끼인 것으로 간주
+  timeout: 10          # ⏱️ 시간 제한(초). 이 시간 동안 멈춰있으면 무작위 동작 트리거
+  last_attack_timeout: 1200 # ⏳ 공격을 하지 않은 최대 허용 시간(초)
+  last_attack_timeout_action: "change_channel" # 🧠 선택지: "go_home" "change_channel"
 
 rune_warning_cn:
-  # ⚠️ Rune Warning Detection(Chinese)
-  # Detects the "Please remove the rune" message on screen.
-  # When this warning appears, the bot will pause combat and start searching for the rune instead.
-  top_left: [513, 137]        # 🟦 Top-left corner of the rune warning message (img_frame coord)
-  bottom_right: [768, 177]    # 🟥 Bottom-right corner of the rune warning (img_frame coord)
-  diff_thres: 0.15            # 📏 Matching threshold [0.0 ~ 1.0], higher = stricter match
+  # ⚠️ 룬 경고 감지 (중국어)
+  # 화면의 "룬을 제거해 주세요" 메시지를 감지합니다.
+  # 이 경고가 뜨면 봇은 전투를 중단하고 룬을 찾기 시작합니다.
+  top_left: [513, 137]        # 🟦 룬 경고 메시지 좌상단 (img_frame 좌표)
+  bottom_right: [768, 177]    # 🟥 룬 경고 메시지 우하단 (img_frame 좌표)
+  diff_thres: 0.15            # 📏 매칭 임계값 [0.0 ~ 1.0]. 높을수록 엄격
 
 rune_warning_eng:
-  # ⚠️ Rune Warning Detection(English)
-  # Detects the "Please remove the rune" message on screen.
-  # When this warning appears, the bot will pause combat and start searching for the rune instead.
-  top_left: [432, 145]        # 🟦 Top-left corner of the rune warning message (img_frame coord)
-  bottom_right: [864, 171]    # 🟥 Bottom-right corner of the rune warning (img_frame coord)
-  diff_thres: 0.15            # 📏 Matching threshold [0.0 ~ 1.0], higher = stricter match
+  # ⚠️ 룬 경고 감지 (영어)
+  # 화면의 "룬을 제거해 주세요" 메시지를 감지합니다.
+  # 이 경고가 뜨면 봇은 전투를 중단하고 룬을 찾기 시작합니다.
+  top_left: [432, 145]        # 🟦 룬 경고 메시지 좌상단 (img_frame 좌표)
+  bottom_right: [864, 171]    # 🟥 룬 경고 메시지 우하단 (img_frame 좌표)
+  diff_thres: 0.15            # 📏 매칭 임계값 [0.0 ~ 1.0]. 높을수록 엄격
 
 rune_enable_msg_cn:
-  # ⚠️ Rune Enable Message(Chinese)
-  # Detects the "Runes has been create" message on screen
-  # When it appears, the bot will start detecting runes
-  top_left: [559, 57]     # 📐 top left coordinate of rune enable msg (img_frame coord)
-  bottom_right: [733, 87] # 📐 right bottom coordinate of rune enable msg (img_frame coord)
-  diff_thres: 0.15         # 📏 Match threshold [0.0 ~ 1.0], higher = stricter match
+  # ⚠️ 룬 활성 메시지 (중국어)
+  # 화면의 "룬이 생성되었습니다" 메시지를 감지합니다.
+  # 이 메시지가 뜨면 봇은 룬 감지를 시작합니다.
+  top_left: [559, 57]     # 📐 룬 활성 메시지 좌상단 좌표 (img_frame 좌표)
+  bottom_right: [733, 87] # 📐 룬 활성 메시지 우하단 좌표 (img_frame 좌표)
+  diff_thres: 0.15         # 📏 매칭 임계값 [0.0 ~ 1.0]. 높을수록 엄격
 
 rune_enable_msg_eng:
-  # ⚠️ Rune Enable Message(English)
-  # Detects the "Runes has been create" message on screen
-  # When it appears, the bot will start detecting runes
-  top_left: [460, 60]     # 📐 top left coordinate of rune enable msg (img_frame coord)
-  bottom_right: [702, 83] # 📐 right bottom coordinate of rune enable msg (img_frame coord)
-  diff_thres: 0.15         # 📏 Match threshold [0.0 ~ 1.0], higher = stricter match
+  # ⚠️ 룬 활성 메시지 (영어)
+  # 화면의 "룬이 생성되었습니다" 메시지를 감지합니다.
+  # 이 메시지가 뜨면 봇은 룬 감지를 시작합니다.
+  top_left: [460, 60]     # 📐 룬 활성 메시지 좌상단 좌표 (img_frame 좌표)
+  bottom_right: [702, 83] # 📐 룬 활성 메시지 우하단 좌표 (img_frame 좌표)
+  diff_thres: 0.15         # 📏 매칭 임계값 [0.0 ~ 1.0]. 높을수록 엄격
 
 rune_detect:
-  # ✨ Rune Detection Box
-  # This detects the glowing purple rune on screen.
-  # The box determines how big of a region to search in the game screen.
-  box_width: 350              # ↔️ Width of the detection region
-  box_height: 150             # ↕️ Height of the detection region
-  diff_thres: 0.2             # 📏 Match threshold [0.0 ~ 1.0], higher = stricter match
-  debug     : False           # 🔍 Draw rune boxes or not
+  # ✨ 룬 감지 박스
+  # 화면 위의 보랏빛으로 빛나는 룬을 감지합니다.
+  # 박스는 게임 화면에서 탐색할 영역의 크기를 결정합니다.
+  box_width: 350              # ↔️ 감지 영역의 너비
+  box_height: 150             # ↕️ 감지 영역의 높이
+  diff_thres: 0.2             # 📏 매칭 임계값 [0.0 ~ 1.0]. 높을수록 엄격
+  debug     : False           # 🔍 룬 박스 시각화 여부
 
 rune_find:
-  # 🧭 Rune-Finding Behavior
-  near_rune_duration: 10           # 🕒 Duration to interact with rune when a positive detection occurs
-  rune_trigger_cooldown: 0.3       # 🕒 Cooldown for 'up' key rune trigger
-  rune_trigger_distance_x: 20      # ↔️ only press 'up' when player distance(in pixel) to the rune is close enough.
-  rune_trigger_distance_y: 200     # ↕️ only press 'up' when player distance(in pixel) to the rune is close enough.
+  # 🧭 룬 찾기 동작
+  near_rune_duration: 10           # 🕒 룬을 감지했을 때 상호작용을 시도할 지속 시간
+  rune_trigger_cooldown: 0.3       # 🕒 룬 트리거('up' 키) 쿨다운
+  rune_trigger_distance_x: 20      # ↔️ 룬과의 거리가 충분히 가까울 때만 'up' 입력 (픽셀)
+  rune_trigger_distance_y: 200     # ↕️ 룬과의 거리가 충분히 가까울 때만 'up' 입력 (픽셀)
 
 rune_solver:
-  # 🧩 Rune Mini-Game Solver
-  # When a rune is successfully triggered, a 4-arrow window game appears.
-  # The rune_solver will automatically detect and match the best arrow pattern,
-  # then press the correct direction key to solve the mini-game.
-  arrow_box_size: 80           # 📐 Arrow icon size in pixels (e.g., 75x75 box)
-  arrow_box_interval: 170      # ↔️ Distance between arrows (horizontal spacing in pixels)
-  arrow_box_coord: [355, 296]  # 🎯 Top-left coordinate of the first (leftmost) arrow (img_frame coord)
-  arrow_box_diff_thres: 0.2    # 📏 Match threshold [0.0 ~ 1.0]
-                               #     ↪ If the match score of the first arrow is lower than this,
-                               #     the solver assumes the rune mini-game has started
+  # 🧩 룬 미니게임 솔버
+  # 룬을 성공적으로 트리거하면 4개의 화살표 미니게임이 등장합니다.
+  # rune_solver 가 자동으로 가장 적합한 화살표 패턴을 매칭하고
+  # 올바른 방향 키를 입력해 미니게임을 풉니다.
+  arrow_box_size: 80           # 📐 화살표 아이콘 크기(픽셀) (예: 75x75 박스)
+  arrow_box_interval: 170      # ↔️ 화살표 사이 간격 (가로, 픽셀)
+  arrow_box_coord: [355, 296]  # 🎯 첫(가장 왼쪽) 화살표의 좌상단 좌표 (img_frame 좌표)
+  arrow_box_diff_thres: 0.2    # 📏 매칭 임계값 [0.0 ~ 1.0]
+                               #     ↪ 첫 화살표의 매칭 점수가 이보다 낮으면
+                               #     룬 미니게임이 시작된 것으로 간주
   arrow_low_hsv: [340, 40, 40]    # 🔴
   arrow_high_hsv: [110, 100, 100] # 🔴
   arrow_highlight_low_hsv: [340, 85, 85]    # 🔴
   arrow_highlight_high_hsv: [110, 100, 100] # 🔴
 
 minimap:
-  # 🗺️ Mini-Map
-  # The minimap appears in the top-left corner of the game window.
-  # It is used to estimate the player’s current location in the world.
-  player_color: [136, 255, 255]   # 🟡 BGR value of the yellow player dot on the minimap
-  other_player_color: [0, 0, 255] # 🔴 BGR value of the red other player dot on the minimap
-  debug_window_upscale: 4         # 🔍 Zoom factor for the route debug image (for visualization only)
-  offset: [0, 0]                  # 📐 Don't set this unless playing on global server
+  # 🗺️ 미니맵
+  # 미니맵은 게임 창 좌상단에 나타납니다.
+  # 월드 내 플레이어의 현재 위치를 추정하는 데 사용됩니다.
+  player_color: [136, 255, 255]   # 🟡 미니맵의 노란 플레이어 점 BGR 값
+  other_player_color: [0, 0, 255] # 🔴 미니맵의 빨간 타 유저 점 BGR 값
+  debug_window_upscale: 4         # 🔍 루트 디버그 이미지의 확대 배율 (시각화 전용)
+  offset: [0, 0]                  # 📐 글로벌 서버에서 플레이하는 게 아니라면 설정하지 말 것
 
 patrol:
-  # 🚶‍♂️ Patrol Mode
-  # In this mode, the player will walk back and forth and attack periodically.
-  # It doesn't rely on monster detection or a minimap — just pure action!
-  range: [0.2, 0.8]               # ↔️ [0.0 ~ 1.0] Patrol boundaries (relative to screen width)
-                                  #     - 0.0 = Left edge of the game window
-                                  #     - 1.0 = Right edge
-                                  # The player will turn back once reaching these bounds.
-  turn_point_thres: 10            # 🔁 Number of consecutive frames required to confirm a turn point
-  patrol_attack_interval: 2.5     # 🕒 Time in seconds between each attack while patrolling
+  # 🚶‍♂️ 순찰 모드
+  # 이 모드에서는 플레이어가 좌우로 왕복하며 주기적으로 공격합니다.
+  # 몬스터 감지나 미니맵에 의존하지 않고 단순 동작만 수행!
+  range: [0.2, 0.8]               # ↔️ [0.0 ~ 1.0] 순찰 경계 (화면 너비 기준 상대값)
+                                  #     - 0.0 = 게임 창 왼쪽 끝
+                                  #     - 1.0 = 오른쪽 끝
+                                  # 이 경계에 도달하면 방향을 반대로 전환합니다.
+  turn_point_thres: 10            # 🔁 회전 지점으로 확정하는 데 필요한 연속 프레임 수
+  patrol_attack_interval: 2.5     # 🕒 순찰 중 공격 간 시간 간격(초)
 
 route_recoder:
-  # 🎥 Route Recorder
-  # The route recorder is a standalone tool that helps generate `map.png` and `route*.png`.
-  # It records the player's movement and actions, then saves them as a route map image.
-  blob_cooldown: 0.7        # ⏱️ Cooldown in seconds between recording actions like 'jump' or 'teleport'
-                            #     These actions are marked as a "blob" on the route map
-  map_padding: 30           # 🖤 Padding (in pixels) added as margin around the edge of the map
+  # 🎥 루트 레코더
+  # 루트 레코더는 `map.png` 와 `route*.png` 를 생성해 주는 독립 도구입니다.
+  # 플레이어의 이동과 동작을 기록한 뒤 루트 맵 이미지로 저장합니다.
+  blob_cooldown: 0.7        # ⏱️ 'jump', 'teleport' 같은 액션 기록 간 쿨다운(초)
+                            #     이 액션들은 루트 맵 위에 "blob"으로 표시됨
+  map_padding: 30           # 🖤 맵 가장자리 주변에 추가할 여백 (픽셀)
 
 game_window:
-  # 🪟 Game Window
-  # Basic information about the game window setup
-  title: "MapleStory Worlds"   # 🎮 Game window title (used to detect the correct window)
-  size: [693, 1282]            # 📐 Game window size [height, width] in pixels, (Excluded title bar size)
-  ratio_tolerance: 0.08        # 📐 Game window 16:9 tolerance
-  title_bar_height: 59         # 📐 Title Bar Height (Note it's before window resize)
+  # 🪟 게임 창
+  # 게임 창 설정에 대한 기본 정보
+  title: "MapleStory Worlds"   # 🎮 게임 창 제목 (올바른 창을 찾는 데 사용)
+  size: [693, 1282]            # 📐 게임 창 크기 [높이, 너비] (픽셀, 타이틀바 제외)
+  ratio_tolerance: 0.08        # 📐 게임 창 16:9 허용 오차
+  title_bar_height: 59         # 📐 타이틀바 높이 (창 리사이즈 전 값임에 주의)
 
 email:
-  # 📩 Email
-  # Send email to notify user
-  # This feature is currently work in prograss
+  # 📩 이메일
+  # 사용자에게 알림 이메일을 발송
+  # 현재 작업 중인 기능
   enable: False                                   # ✅
-  sender_email: "maplestoryautolevelup@gmail.com" # Your don't have to change this
-  sender_password: "lvxfdhthvvrcuojj"             # Your don't have to change this
-  receiver_email: "luckyyu910645@gmailcom"        # 📩 Put your email here
+  sender_email: "maplestoryautolevelup@gmail.com" # 변경하지 않아도 됨
+  sender_password: "lvxfdhthvvrcuojj"             # 변경하지 않아도 됨
+  receiver_email: "luckyyu910645@gmailcom"        # 📩 본인 이메일 입력
 
 system:
-  # ⚙️ System Settings
-  # Controls performance and behavior of core system threads.
-  fps_limit_main: 10                # 🚥 Main loop FPS – controls how fast the main thread runs
-  fps_limit_keyboard_controller: 30 # 🚥 Keyboard controller thread FPS
-  fps_limit_window_capturor: 15     # 🚥 Window capture thread FPS
-  fps_limit_route_recorder: 10      # 🚥 Route recorder FPS
-  fps_limit_auto_dice_roller: 1     # 🚥 Auto rice roller FPS
-  key_debounce_interval: 1          # ⏱️ Cooldown (in seconds) between function key presses (e.g., F1, F2...)
-  server: "TW"                      # ⚙️ Options: "TW" "NA"
-  language: "cn"                    # ⚙️ Options: "eng" "cn"
+  # ⚙️ 시스템 설정
+  # 핵심 시스템 스레드의 성능 및 동작 제어
+  fps_limit_main: 10                # 🚥 메인 루프 FPS – 메인 스레드 실행 속도 제어
+  fps_limit_keyboard_controller: 30 # 🚥 키보드 컨트롤러 스레드 FPS
+  fps_limit_window_capturor: 15     # 🚥 창 캡처 스레드 FPS
+  fps_limit_route_recorder: 10      # 🚥 루트 레코더 FPS
+  fps_limit_auto_dice_roller: 1     # 🚥 자동 주사위 굴리기 FPS
+  key_debounce_interval: 1          # ⏱️ 펑션 키(F1, F2 등) 입력 간 쿨다운(초)
+  server: "TW"                      # ⚙️ 선택지: "TW" "NA"
+  language: "cn"                    # ⚙️ 선택지: "eng" "cn"
 
 profiler:
-  # ⚙️ Profiler
-  # For FPS/performance debugging
-  # When the FPS is lower than 5, please use profiler to find which code block is costing more time 
-  enable: False       # ✅ To print the profiler result or not
-  print_frequency: 30 # Print profiler result for every 30 frames
+  # ⚙️ 프로파일러
+  # FPS/성능 디버깅용
+  # FPS가 5 미만일 때 어떤 코드 블록이 더 많은 시간을 차지하는지 찾을 때 사용
+  enable: False       # ✅ 프로파일러 결과 출력 여부
+  print_frequency: 30 # 30 프레임마다 프로파일러 결과 출력

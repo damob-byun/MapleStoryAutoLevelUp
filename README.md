@@ -64,8 +64,35 @@ This project is mostly developed and tested on MapleStory Artale Taiwan Server a
 
 ## Run(Only for Developers)
 
+### Set up a virtual environment (venv)
+
+It's recommended to install dependencies inside a virtual environment.
+
+**macOS / Linux**
+```bash
+# Create the venv (only once)
+python3 -m venv venv
+
+# Activate it (every new terminal session)
+source venv/bin/activate
+
+# Your prompt now shows (venv). To leave it later:
+deactivate
+```
+
+**Windows (PowerShell)**
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+# To leave it later: deactivate
+```
+
+> Shortcut: `make setup` creates the venv and installs requirements in one step.
+> `make activate` prints the activation command for your platform.
+
 ### Install dependency
 ```
+# Make sure the venv is activated first
 pip install -r requirements.txt
 ```
 
