@@ -1477,14 +1477,22 @@ class MapleStoryAutoBot:
         elif color_code_up_down:
             self.cmd_move_x, self.cmd_move_y, self.cmd_action = color_code_up_down["command"].split()
 
+        # 루트가 점프/등반(jump, up, down)을 지시했는지 확인.
+        # 점프 구간에서는 텔레포트가 켜져 있어도 점프/올라가기를 우선(텔레포트로 덮어쓰지 않음).
+        keep_jump = self.cfg['teleport'].get('keep_route_jump', True)
+        is_route_jump_or_climb = (
+            self.cmd_action == "jump" or self.cmd_move_y in ("up", "down")
+        )
+        skip_teleport = keep_jump and is_route_jump_or_climb
+
         # teleport away from edge to avoid falling off cliff
-        if self.is_near_edge() and \
+        if (not skip_teleport) and self.is_near_edge() and \
             time.time() - self.t_last_teleport > self.cfg["teleport"]["cooldown"]:
             self.cmd_action = "teleport"
             self.t_last_teleport = time.time() # update timer
 
         # Use teleport while walking (랜덤 지터로 매크로 감지 회피)
-        if self.cfg['teleport']['is_use_teleport_to_walk'] and \
+        if (not skip_teleport) and self.cfg['teleport']['is_use_teleport_to_walk'] and \
             time.time() - self.t_last_teleport > \
                 self.cfg['teleport']['cooldown'] + self.teleport_walk_jitter:
             self.cmd_action = "teleport"
@@ -1812,9 +1820,10 @@ class MapleStoryAutoBot:
                 if self.is_show_debug_window and self.is_ui:
                     img_frame_debug_emit = self.img_frame_debug[:
                         self.cfg["ui_coords"]["ui_y_start"], :].copy()
-                    img_route_debug_emit = self.img_route_debug.copy()
                     self.image_debug_signal.emit(img_frame_debug_emit)
-                    self.route_map_viz_signal.emit(img_route_debug_emit)
+                    # patrol/aux 모드는 루트맵이 없어 img_route_debug 가 None 일 수 있음
+                    if self.img_route_debug is not None:
+                        self.route_map_viz_signal.emit(self.img_route_debug.copy())
             else:
                 pass
                 # logger.warning("Skipped debug window update due to invalid frame.")

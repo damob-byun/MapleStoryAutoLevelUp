@@ -21,10 +21,28 @@ else:
 
 pyautogui.PAUSE = 0  # remove delay
 
+# UI 가 모디파이어 키를 기호(⇧⌥⌃⌘)로 저장하는데 pyautogui 는 키 이름 문자열을
+# 받으므로 변환해 준다. (macOS UI 키 캡처 대응)
+KEY_SYMBOL_MAP = {
+    "⇧": "shift",   # ⇧
+    "⌥": "option",  # ⌥  (pyautogui: option == alt 별칭)
+    "⌃": "ctrl",    # ⌃
+    "⌘": "command", # ⌘
+    "⏎": "enter",   # ⏎
+    "⌫": "backspace",  # ⌫
+    "⇥": "tab",     # ⇥
+    "␣": "space",   # ␣
+}
+
+def normalize_key(key):
+    '''기호로 저장된 키를 pyautogui 가 받는 이름으로 변환'''
+    return KEY_SYMBOL_MAP.get(key, key)
+
 def key_down(key):
     '''
     Press key down
     '''
+    key = normalize_key(key)
     try:
         pyautogui.keyDown(key)
     except pyautogui.FailSafeException:
@@ -35,6 +53,7 @@ def key_up(key):
     '''
     Release key
     '''
+    key = normalize_key(key)
     try:
         pyautogui.keyUp(key)
     except pyautogui.FailSafeException:
