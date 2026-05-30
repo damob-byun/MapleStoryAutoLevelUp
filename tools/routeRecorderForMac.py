@@ -332,7 +332,15 @@ class RouteRecorder():
 
         # Get minimap from game window
         if self.is_first_frame:
-            minimap_box = get_minimap_loc_size(self.img_frame)
+            # macOS: 미니맵 흰 테두리가 작고(960px 캡처를 1296 으로 확대),
+            # 지도 콘텐츠가 하단 테두리에 닿아 깨지므로 완화된 검출 파라미터 사용.
+            minimap_box = get_minimap_loc_size(
+                self.img_frame,
+                min_size=80,
+                search_region_ratio=0.5,   # 좌상단 1/4 영역만 탐색
+                min_border_sides=3,        # 4면 중 3면만 흰색이면 통과
+                border_ratio=0.8,          # 각 테두리 80% 이상 흰색
+            )
             if minimap_box is None:
                 # 미니맵을 못 찾음. 보통 두 가지 원인:
                 #   1) macOS 화면 기록 권한 미허용 → mss 가 검정 프레임만 받음
@@ -593,6 +601,11 @@ if __name__ == '__main__':
         logger.error(f"RouteRecorder Init failed: {e}")
         sys.exit(1)
     else:
+        # macOS: 창을 미리 한 번만 생성해 두지 않으면 cv2.imshow 가 매 프레임
+        # 새 창을 띄움. namedWindow 로 고정 창을 만들어 재사용하게 함.
+        for win in ("Game Window Debug", "Map", "Route Map Debug"):
+            cv2.namedWindow(win, cv2.WINDOW_NORMAL)
+
         while True:
             t_start = time.time()
 

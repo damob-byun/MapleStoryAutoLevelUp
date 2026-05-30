@@ -97,6 +97,7 @@ class KeyBoardListener():
             # Handle F1, F2, F3, ... F12
             if key in self.func_keys:
                 idx = self.func_keys[key]
+                logger.debug(f"[KeyBoardListener] Function key detected: F{idx+1}")
                 if time.time() - self.t_func_key[idx] > self.debounce_interval:
                     self.is_pressed_func_key[idx] = True # Polling
                     self.func_key_handlers.get(key.name.lower())()

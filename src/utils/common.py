@@ -392,7 +392,8 @@ def to_standard_hsv(color_hsv):
     v_std = v / 255 * 100
     return (h_std, s_std, v_std)
 
-def get_minimap_loc_size(img_frame):
+def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
+                         min_border_sides=4, border_ratio=1.0):
     '''
     Detects the location and size of the minimap within the game frame.
 
@@ -400,13 +401,28 @@ def get_minimap_loc_size(img_frame):
     - Thresholding the image get pure white(255,255,255) pixels.
     - Using connected components to find white-bordered regions.
     - Filtering candidates based on expected minimap size and margin rules:
-        - Top, bottom, left, right margins must be 1px white lines.
+        - Top, bottom, left, right margins must be white lines.
+
+    Args:
+        min_size (int): Minimum width/height (px) of a minimap candidate.
+        search_region_ratio (float): Only accept candidates whose top-left
+            corner is within this fraction of the frame (from origin). 1.0 =
+            whole frame; 0.5 = top-left quadrant. Useful on macOS where the
+            minimap is always in the top-left corner.
+        min_border_sides (int): How many of the 4 borders (top/bottom/left/
+            right) must be (mostly) white. 4 = strict (original behavior).
+            3 tolerates one broken edge (e.g. macOS minimap whose map content
+            touches the bottom border).
+        border_ratio (float): Fraction of a border that must be pure white for
+            that border to count. 1.0 = the entire edge must be white
+            (original behavior).
 
     Returns:
         (x, y, w, h): Top-left coordinate and width/height of the minimap.
                     Returns None if not found.
     '''
     white = np.array([255, 255, 255])
+    H, W = img_frame.shape[:2]
 
     # Mask for pure white
     mask_white = cv2.inRange(img_frame, white, white)
@@ -420,21 +436,25 @@ def get_minimap_loc_size(img_frame):
         x0, y0, rw, rh, area = stats[i]
 
         # Filter out small blobs
-        if rw < 100 or rh < 100:
+        if rw < min_size or rh < min_size:
+            continue
+
+        # Restrict to search region (e.g. top-left corner on macOS)
+        if x0 > W * search_region_ratio or y0 > H * search_region_ratio:
             continue
 
         x1 = x0 + rw - 1
         y1 = y0 + rh - 1
 
-        # Check 1px white top and bottom margins
-        if not (np.all(img_frame[y0, x0:x0+rw] == white) and \
-                np.all(img_frame[y1, x0:x0+rw] == white)):
-            continue
+        # Compute white ratio of each of the 4 borders
+        top = float(np.mean(np.all(img_frame[y0, x0:x0+rw] == white, axis=1)))
+        bot = float(np.mean(np.all(img_frame[y1, x0:x0+rw] == white, axis=1)))
+        lft = float(np.mean(np.all(img_frame[y0:y0+rh, x0] == white, axis=1)))
+        rgt = float(np.mean(np.all(img_frame[y0:y0+rh, x1] == white, axis=1)))
 
-        # Check 1px white left and right margins
-        # Ensures the candidate region is framed by white borders like the minimap
-        if not (np.all(img_frame[y0:y0+rh, x0] == white) and \
-                np.all(img_frame[y0:y0+rh, x1] == white)):
+        # Require at least `min_border_sides` borders to be (mostly) white
+        sides_ok = sum(s >= border_ratio for s in (top, bot, lft, rgt))
+        if sides_ok < min_border_sides:
             continue
 
         # Create a mask of non-white pixels

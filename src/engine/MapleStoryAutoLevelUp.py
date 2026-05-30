@@ -1580,7 +1580,18 @@ class MapleStoryAutoBot:
         ### Get Minimap ###
         ###################
         # Get minimap coordinate and size on game window
-        minimap_result = get_minimap_loc_size(self.img_frame)
+        # macOS: 캡처를 확대(960→1296)하면서 미니맵 흰 테두리가 깨지고
+        # 지도 콘텐츠가 하단 테두리에 닿으므로 완화된 검출 파라미터 사용.
+        if is_mac():
+            minimap_result = get_minimap_loc_size(
+                self.img_frame,
+                min_size=80,
+                search_region_ratio=0.5,
+                min_border_sides=3,
+                border_ratio=0.8,
+            )
+        else:
+            minimap_result = get_minimap_loc_size(self.img_frame)
         if minimap_result is None:
             if time.time() - self.t_last_minimap_update > 30:
                 # Unable to get minimap for 30 seconds -> assume it's login screen
