@@ -23,7 +23,9 @@ eng_to_cn:
   black_mountain: 烏山深處
   disposed_flower_garden: 暗影花園
   mu_Lung_wild_bear_area_2: 野熊的領土2
+  forest_of_dead_trees_2: 죽숲2
   # monster
+  coolie_zombie: 쿨리좀비
   zombie_lupin: 天使猴
   black_axe_stump: 黑斧木妖
   brown_windup_bear: 褐色發條熊
@@ -77,3 +79,4 @@ map_mobs_mapping:
   black_mountain: [hodori, moon_bunny, black_axe_stump]
   disposed_flower_garden: [nependeath, dark_nependeath]
   mu_Lung_wild_bear_area_2: [grizzly, panda]
+  forest_of_dead_trees_2: [coolie_zombie]

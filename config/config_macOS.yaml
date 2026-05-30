@@ -5,8 +5,21 @@ game_window:
   size: [541, 960]
   title_bar_height: 31         # 📐 Title Bar Height (Note titel bar will be cropped before window resize)
 
+health_monitor:
+  # macOS: 작은 창이라 HP/MP/EXP 바에 흰 테두리가 없어 자동 검출 불가.
+  # 고정 좌표 [x, y, w, h] 로 바 영역을 직접 지정.
+  # ⚠️ y 좌표는 ui_coords.ui_y_start(610) 를 뺀 값 (HealthMonitor 는
+  #    img_frame[ui_y_start:] 잘린 프레임을 받기 때문). 즉 전체프레임 y=672 → 62.
+  use_fixed_bars: True
+  hp_bar_rect:  [293, 62, 145, 21]
+  mp_bar_rect:  [439, 62, 145, 21]
+  exp_bar_rect: [592, 62, 158, 21]
+
 monster_detect:
   hp_bar_color: [90, 201, 108] # (B,G,R)
+  # macOS: 작은 창이라 화면 속 몹이 템플릿보다 작음 → 템플릿을 미리 축소.
+  # 인식이 안 되면 0.4~0.7 사이로 조정해보세요.
+  template_scale: 0.5
 
 minimap:
   player_color: [84, 255, 255] # BGR

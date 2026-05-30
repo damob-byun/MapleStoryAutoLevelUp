@@ -1,4 +1,5 @@
 import time
+import random
 
 # Local import
 from src.states.base_state import State
@@ -9,6 +10,13 @@ class PatrolState(State):
         self.bot = bot
         self.is_patrol_to_left = True # Patrol direction flag
         self.patrol_turn_point_cnt = 0 # Patrol tuning back counter
+        self.next_attack_delay = None # 다음 공격까지 목표 간격(랜덤 지터 포함)
+
+    def _roll_attack_delay(self):
+        '''공격 간격에 랜덤 지터를 더해 매크로 감지 회피'''
+        base = self.bot.cfg["patrol"]["patrol_attack_interval"]
+        jitter = self.bot.cfg["patrol"].get("patrol_attack_interval_random", 0.0)
+        return base + random.uniform(0.0, jitter)
 
     def on_enter(self):
         pass
@@ -44,11 +52,13 @@ class PatrolState(State):
         # Update attack commend by detecting mobs near players
         self.bot.update_cmd_by_mob_detection()
 
-        # Update attack commend by periodically attack
-        if time.time() - self.bot.t_last_attack > \
-            self.bot.cfg["patrol"]["patrol_attack_interval"]:
+        # Update attack commend by periodically attack (랜덤 지터 적용)
+        if self.next_attack_delay is None:
+            self.next_attack_delay = self._roll_attack_delay()
+        if time.time() - self.bot.t_last_attack > self.next_attack_delay:
             self.bot.cmd_action = "attack"
             self.bot.t_last_attack = time.time()
+            self.next_attack_delay = self._roll_attack_delay() # 다음 간격 새로 추첨
 
         # If player stuck for too long, perform a random command
         if self.bot.is_player_stuck():

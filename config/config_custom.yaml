@@ -1,24 +1,28 @@
-
-monster_detect:
-  hp_bar_color: [90, 201, 108] # (B,G,R)
-
-minimap:
-  player_color: [84, 255, 255] # BGR
-  other_player_color: [20, 15, 228] # BGR
-  debug_window_upscale: 2
-
-party_red_bar:
-  lower_red: [4, 80, 50] # ❤️ HSV, darker red of party health bar
-  upper_red: [5, 90, 90] # ❤️ HSV, brighter red of party health bar
-
 aoe_skill:
   range_x: 350
 bot:
+  # patrol: 몹 검출 없이 좌우 왕복하며 주기적으로 AOE 시전 (이 맵은 배경이 몹과
+  # 비슷해 템플릿 매칭이 불가 → patrol 이 가장 안정적). 템플릿 매칭 안 함 → 빠름.
+  mode: patrol
   attack: aoe_skill
-  map: first_barrack
+  map: forest_of_dead_trees_2
+patrol:
+  range: [0.2, 0.8]                  # 왕복 경계 (화면 너비 비율). 좁히려면 [0.3,0.7]
+  patrol_attack_interval: 1.0        # 공격 기본 간격(초)
+  patrol_attack_interval_random: 0.6 # 🎲 +0~0.6초 무작위 → 1.0~1.6초 사이 랜덤 발사
+  turn_point_thres: 10               # 방향 전환 확정에 필요한 연속 프레임 수
 health_monitor:
   add_hp_percent: 70
+  add_mp_percent: 0
   force_heal: true
 key:
-  add_hp: delete
-  aoe_skill: shift
+  add_hp: ins
+  aoe_skill: ''
+  directional_attack: ''
+  jump: ''
+  return_home: ''
+  teleport: space
+teleport:
+  is_use_teleport_to_walk: true
+  cooldown: 1               # 텔레포트 기본 간격(초)
+  cooldown_random: 0.5      # 🎲 +0~0.5초 무작위 → 1.0~1.5초 사이 랜덤 (매크로 감지 회피)

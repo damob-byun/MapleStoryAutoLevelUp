@@ -99,6 +99,7 @@ class MapleStoryAutoBot:
         self.t_last_frame = time.time() # Last frame timer, for fps calculation
         self.t_watch_dog = time.time() # Last movement timer
         self.t_last_teleport = time.time() # Last teleport timer
+        self.teleport_walk_jitter = 0.0 # 텔레포트 걷기 간격 랜덤 지터(매크로 감지 회피)
         self.t_last_attack = time.time() # Last attack timer for cooldown
         self.t_last_minimap_update = time.time()
         self.t_to_change_channel = time.time()
@@ -183,12 +184,28 @@ class MapleStoryAutoBot:
                 img = mask_route_colors(self.img_map, img, cfg["route"]["color_code_up_down"])
                 self.img_routes.append(img)
 
+            # macOS: 작은 창이라 화면 속 몹이 템플릿보다 작음.
+            # template_scale 로 템플릿을 미리 축소해 화면 속 몹 크기에 맞춤.
+            # (INTER_NEAREST 로 (0,255,0) 마스크 색이 보간으로 흐려지지 않게 함)
+            template_scale = cfg["monster_detect"].get("template_scale", 1.0)
+            # 매 프레임 매칭하는 템플릿 수 제한(성능). 0 이하면 전부 사용.
+            max_templates = cfg["monster_detect"].get("max_templates", 0)
+
             # Load monsters images from monster/<monster_name>
             for monster_name in self.data["map_mobs_mapping"][map_name]:
                 imgs = []
-                for file in glob.glob(f"monster/{monster_name}/{monster_name}*.png"):
+                files = sorted(glob.glob(f"monster/{monster_name}/{monster_name}*.png"))
+                # 템플릿이 많으면 균등 간격으로 샘플링해 개수 제한
+                if max_templates and len(files) > max_templates:
+                    step = len(files) / max_templates
+                    files = [files[int(i * step)] for i in range(max_templates)]
+                for file in files:
                     # Add original image
                     img = load_image(file)
+                    if template_scale != 1.0:
+                        img = cv2.resize(
+                            img, (0, 0), fx=template_scale, fy=template_scale,
+                            interpolation=cv2.INTER_NEAREST)
                     imgs.append((img, get_mask(img, (0, 255, 0))))
                     # Add flipped image
                     img_flip = cv2.flip(img, 1)
@@ -1466,11 +1483,15 @@ class MapleStoryAutoBot:
             self.cmd_action = "teleport"
             self.t_last_teleport = time.time() # update timer
 
-        # Use teleport while walking
+        # Use teleport while walking (랜덤 지터로 매크로 감지 회피)
         if self.cfg['teleport']['is_use_teleport_to_walk'] and \
-            time.time() - self.t_last_teleport > self.cfg['teleport']['cooldown']:
+            time.time() - self.t_last_teleport > \
+                self.cfg['teleport']['cooldown'] + self.teleport_walk_jitter:
             self.cmd_action = "teleport"
             self.t_last_teleport = time.time() # update timer
+            # 다음 텔레포트 간격에 더할 지터 새로 추첨
+            self.teleport_walk_jitter = random.uniform(
+                0.0, self.cfg['teleport'].get('cooldown_random', 0.0))
 
         # replace teleport to jump if user doesn't set teleport key
         if self.cfg["key"]["teleport"] == "" and self.cmd_action == "teleport":
@@ -1653,9 +1674,11 @@ class MapleStoryAutoBot:
                 color=(0, 0, 255), thickness=-1)
 
         # Get player location on minimap
+        # macOS: 캡처된 노란 점 색이 미세하게 흔들리므로 허용오차를 줌.
         loc_player_minimap = get_player_location_on_minimap(
                                 self.img_minimap,
-                                minimap_player_color=self.cfg["minimap"]["player_color"])
+                                minimap_player_color=self.cfg["minimap"]["player_color"],
+                                tol=15 if is_mac() else 0)
         if loc_player_minimap:
             self.loc_player_minimap = loc_player_minimap
 

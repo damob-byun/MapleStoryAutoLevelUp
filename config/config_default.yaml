@@ -75,6 +75,7 @@ teleport:
   # ⚠️ 아직 실험적 기능입니다! 활성화 시 예기치 못한 문제가 생길 수 있음.
   is_use_teleport_to_walk: False  # ✅ 걷는 대신 텔레포트 사용 (경로가 부정확해질 수 있음)
   cooldown: 1                     # ⏱️ 텔레포트 스킬 쿨다운 (초)
+  cooldown_random: 0              # 🎲 쿨다운에 더할 랜덤 지터(초). 0~이 값 사이 무작위 추가 (매크로 감지 회피)
 
 edge_teleport:
   # 🧙‍♂️ 가장자리 텔레포트
@@ -289,6 +290,7 @@ patrol:
                                   # 이 경계에 도달하면 방향을 반대로 전환합니다.
   turn_point_thres: 10            # 🔁 회전 지점으로 확정하는 데 필요한 연속 프레임 수
   patrol_attack_interval: 2.5     # 🕒 순찰 중 공격 간 시간 간격(초)
+  patrol_attack_interval_random: 0  # 🎲 공격 간격에 더할 랜덤 지터(초). 0~이 값 사이 무작위 추가 (매크로 감지 회피)
 
 route_recoder:
   # 🎥 루트 레코더

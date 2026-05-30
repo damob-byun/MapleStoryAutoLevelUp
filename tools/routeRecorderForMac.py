@@ -78,6 +78,10 @@ class RouteRecorder():
         x1 = min(self.img_route_debug.shape[1], x0 + crop_w)
         y1 = min(self.img_route_debug.shape[0], y0 + crop_h)
 
+        # 플레이어 위치가 라우트 이미지 밖이면 크롭이 비어 cv2.resize 가 터짐 → 건너뜀
+        if x1 <= x0 or y1 <= y0:
+            return
+
         # Crop region
         mini_map_crop = self.img_route_debug[y0:y1, x0:x1]
         mini_map_crop = cv2.resize(mini_map_crop,
@@ -193,6 +197,7 @@ class RouteRecorder():
         self.fps = 0 # Frame per second
         self.is_first_frame = True # first frame flag
         self.is_enable = True
+        self.is_show_viz = True # 디버그 창 표시 여부 (--no_viz 로 끔)
         # Coordinate (top-left coordinate)
         self.loc_minimap = (0, 0) # minimap location on game screen
         self.loc_player = (0, 0) # player location on game screen
@@ -378,7 +383,13 @@ class RouteRecorder():
         self.img_minimap[black_mask] = [1, 1, 1]
 
         # Get player location on minimap
-        loc_player_minimap = get_player_location_on_minimap(self.img_minimap)
+        # macOS: 캡처된 노란 점 색이 config 값에서 미세하게 흔들리므로
+        # config 의 player_color 를 넘기고 약간의 허용오차(tol)를 줌.
+        loc_player_minimap = get_player_location_on_minimap(
+            self.img_minimap,
+            minimap_player_color=tuple(self.cfg["minimap"]["player_color"]),
+            tol=15,
+        )
         if loc_player_minimap:
             self.loc_player_minimap = loc_player_minimap
 
@@ -445,7 +456,8 @@ class RouteRecorder():
             self.replace_color_on_map((0, 78, 78),
                                       (5, 100, 100))
 
-        cv2.imshow("Map", self.img_map)
+        if self.is_show_viz:
+            cv2.imshow("Map", self.img_map)
         self.img_route_debug = self.img_route.copy()
 
         # Get player location on global map
@@ -548,24 +560,26 @@ class RouteRecorder():
         #####################
         ### Debug Windows ###
         #####################
-        # Print text on debug image
-        self.update_info_on_img_frame_debug()
+        if self.is_show_viz:
+            # Print text on debug image
+            self.update_info_on_img_frame_debug()
 
-        # Show debug image on window
-        self.update_img_frame_debug()
+            # Show debug image on window
+            self.update_img_frame_debug()
 
         # Check if need to save screenshot
         if self.kb.is_pressed_func_key[1]: # 'F2' is pressed
             screenshot(self.img_frame)
             self.kb.is_pressed_func_key[1] = False
 
-        # Resize img_route_debug for better visualization
-        self.img_route_debug = cv2.resize(
-                    self.img_route_debug, (0, 0),
-                    fx=self.cfg["minimap"]["debug_window_upscale"],
-                    fy=self.cfg["minimap"]["debug_window_upscale"],
-                    interpolation=cv2.INTER_NEAREST)
-        cv2.imshow("Route Map Debug", self.img_route_debug)
+        if self.is_show_viz:
+            # Resize img_route_debug for better visualization
+            self.img_route_debug = cv2.resize(
+                        self.img_route_debug, (0, 0),
+                        fx=self.cfg["minimap"]["debug_window_upscale"],
+                        fy=self.cfg["minimap"]["debug_window_upscale"],
+                        interpolation=cv2.INTER_NEAREST)
+            cv2.imshow("Route Map Debug", self.img_route_debug)
 
         # Enable cached location since second frame
         self.is_first_frame = False
@@ -595,16 +609,62 @@ if __name__ == '__main__':
         help='use this map instead of creating a new one'
     )
 
+    parser.add_argument(
+        '--no_viz',
+        action='store_true',
+        help='디버그 창을 아예 띄우지 않음 (게임만 보면서 녹화)'
+    )
+
+    parser.add_argument(
+        '--win_x',
+        type=int,
+        default=0,
+        help='디버그 창들의 기준 X 좌표. 다른 모니터로 보내려면 큰 값 (예: 2000)'
+    )
+
+    parser.add_argument(
+        '--win_y',
+        type=int,
+        default=0,
+        help='디버그 창들의 기준 Y 좌표'
+    )
+
+    parser.add_argument(
+        '--win_scale',
+        type=float,
+        default=0.5,
+        help='디버그 창 크기 배율 (기본 0.5 = 절반 크기). 1.0 = 원본 크기'
+    )
+
+    args = parser.parse_args()
+
     try:
-        routeRecorder = RouteRecorder(parser.parse_args())
+        routeRecorder = RouteRecorder(args)
     except Exception as e:
         logger.error(f"RouteRecorder Init failed: {e}")
         sys.exit(1)
     else:
-        # macOS: 창을 미리 한 번만 생성해 두지 않으면 cv2.imshow 가 매 프레임
-        # 새 창을 띄움. namedWindow 로 고정 창을 만들어 재사용하게 함.
-        for win in ("Game Window Debug", "Map", "Route Map Debug"):
-            cv2.namedWindow(win, cv2.WINDOW_NORMAL)
+        # 디버그 창을 엔진에 알려줌 (run_once 가 imshow 를 건너뛰도록)
+        routeRecorder.is_show_viz = not args.no_viz
+
+        if routeRecorder.is_show_viz:
+            # macOS: 창을 미리 한 번만 생성해 두지 않으면 cv2.imshow 가 매 프레임
+            # 새 창을 띄움. namedWindow 로 고정 창을 만들어 재사용하게 함.
+            # moveWindow 로 고정 위치, resizeWindow 로 크기 축소(WINDOW_NORMAL 필요).
+            s = max(0.1, args.win_scale)
+            # (창이름, 기준X, 기준Y, 원본너비, 원본높이)
+            gw = WINDOW_WORKING_SIZE[0]   # 1296
+            gh = 610                      # ui_y_start 까지만 표시됨
+            windows = [
+                ("Game Window Debug", 0, 0,                gw, gh),
+                ("Map",               0, int(gh*s)+40,     0,  0),
+                ("Route Map Debug",   int(gw*s)+20, int(gh*s)+40, 0, 0),
+            ]
+            for name, dx, dy, w, h in windows:
+                cv2.namedWindow(name, cv2.WINDOW_NORMAL)
+                cv2.moveWindow(name, args.win_x + dx, args.win_y + dy)
+                if w and h:
+                    cv2.resizeWindow(name, int(w*s), int(h*s))
 
         while True:
             t_start = time.time()

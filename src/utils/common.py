@@ -475,24 +475,29 @@ def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
     logger.warning("Minimap not found in the game frame.")
     return None  # minimap not found
 
-def get_player_location_on_minimap(img_minimap, minimap_player_color=(136, 255, 255)):
+def get_player_location_on_minimap(img_minimap, minimap_player_color=(136, 255, 255), tol=0):
     """
     Detects the player's position on the minimap.
 
     The function works by:
     - Creating a binary mask of all pixels in the minimap that match the configured
-    player color exactly.
+    player color (within +/- tol per channel).
     - Verifying that at least 4 matching pixels are found (to avoid false positives).
     - Computing the average of these pixel coordinates to determine the center of
     the player icon on the minimap.
+
+    Args:
+        tol (int): Per-channel tolerance for the color match. 0 = exact match
+            (original behavior). On macOS the captured yellow player dot color
+            drifts a few values, so a small tolerance (e.g. 15) is needed.
 
     Returns:
         (x, y): The player's location in minimap coordinates as a tuple.
                 Returns None if not enough matching pixels are found.
     """
-    mask = cv2.inRange(img_minimap,
-                        minimap_player_color,
-                        minimap_player_color)
+    lower = np.array([max(0, c - tol) for c in minimap_player_color])
+    upper = np.array([min(255, c + tol) for c in minimap_player_color])
+    mask = cv2.inRange(img_minimap, lower, upper)
     coords = cv2.findNonZero(mask)
     if coords is None or len(coords) < 4:
         # logger.warning(f"Fail to locate player location on minimap.")

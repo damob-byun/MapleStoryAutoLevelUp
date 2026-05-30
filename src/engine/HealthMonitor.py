@@ -107,6 +107,25 @@ class HealthMonitor:
         with self.frame_lock:
             img_frame = self.img_frame.copy()
 
+        # macOS: 바에 흰 테두리가 없어 자동 검출 불가 → config 의 고정 좌표 사용
+        if self.cfg["health_monitor"].get("use_fixed_bars", False):
+            loc_size_bars = [
+                tuple(self.cfg["health_monitor"]["hp_bar_rect"]),
+                tuple(self.cfg["health_monitor"]["mp_bar_rect"]),
+                tuple(self.cfg["health_monitor"]["exp_bar_rect"]),
+            ]
+            fh, fw = img_frame.shape[:2]
+            percent_bars = []
+            for x, y, w, h in loc_size_bars:
+                # 좌표가 프레임 밖이면 건너뜀 (빈 이미지 → get_bar_percent 크래시 방지)
+                if x < 0 or y < 0 or x + w > fw or y + h > fh:
+                    logger.warning(f"[Health Monitor] 고정 바 좌표가 프레임 밖: "
+                                   f"({x},{y},{w},{h}) frame={fw}x{fh}")
+                    return (None, None, None)
+                percent_bars.append(get_bar_percent(img_frame[y:y+h, x:x+w]))
+            self.loc_size_bars = loc_size_bars
+            return percent_bars
+
         img_frame_gray = cv2.cvtColor(img_frame, cv2.COLOR_BGR2GRAY)
         white_mask = cv2.inRange(img_frame_gray, 240, 255)
         # cv2.imshow("white_mask", white_mask)
