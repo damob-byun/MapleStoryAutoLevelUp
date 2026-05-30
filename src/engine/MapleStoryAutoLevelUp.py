@@ -35,12 +35,8 @@ else:
     from src.input.GameWindowCapturor import GameWindowCapturor
 from src.engine.HealthMonitor import HealthMonitor
 from src.engine.Profiler import Profiler
-from src.engine.RuneSolver import RuneSolver
 from src.engine.FiniteStateMachine import FiniteStateMachine
 from src.states.hunting import HuntingState
-from src.states.finding_rune import FindingRuneState
-from src.states.near_rune import NearRuneState
-from src.states.solving_rune import SolvingRuneState
 from src.states.auxiliary import AuxiliaryState
 from src.states.patrol import PatrolState
 
@@ -119,23 +115,12 @@ class MapleStoryAutoBot:
         self.capture = None # Game window capturor
         self.health_monitor = None # Health monitor
         self.profiler = None # Profiler, for performance issue debugging
-        self.rune_solver = None # Rune solver
 
         # Finite State Machine
         self.fsm = FiniteStateMachine()
         self.fsm.add_state(HuntingState    ("hunting"     , self))
-        self.fsm.add_state(FindingRuneState("finding_rune", self))
-        self.fsm.add_state(NearRuneState   ("near_rune"   , self))
-        self.fsm.add_state(SolvingRuneState("solving_rune", self))
         self.fsm.add_state(AuxiliaryState  ("aux"         , self))
         self.fsm.add_state(PatrolState     ("patrol"      , self))
-        self.fsm.add_transition("hunting", "finding_rune") # When saw a "Rune has created" messgae
-        self.fsm.add_transition("finding_rune", "hunting") # After finding rune timeout
-        self.fsm.add_transition("finding_rune", "near_rune") # When detect a nearby rune
-        self.fsm.add_transition("finding_rune", "solving_rune") # When enter the arrow minimap
-        self.fsm.add_transition("near_rune", "finding_rune") # After rune solving timeout
-        self.fsm.add_transition("near_rune", "solving_rune") # When enter the arrow minimap
-        self.fsm.add_transition("solving_rune", "hunting") # After rune solving
         self.fsm.set_init_state("hunting")
 
     def update_signals(self, image_debug_signal, route_map_viz_signal):
@@ -231,24 +216,6 @@ class MapleStoryAutoBot:
         self.img_login_button = load_image(f"misc/login_button_{lang}.png")
 
         # Normalized pixel coordinate configuration
-        cfg['rune_warning_cn']['top_left'] = normalize_pixel_coordinate(
-            cfg['rune_warning_cn']['top_left'], cfg['game_window']['size'])
-        cfg['rune_warning_cn']['bottom_right'] = normalize_pixel_coordinate(
-            cfg['rune_warning_cn']['bottom_right'], cfg['game_window']['size'])
-        cfg['rune_warning_eng']['top_left'] = normalize_pixel_coordinate(
-            cfg['rune_warning_eng']['top_left'], cfg['game_window']['size'])
-        cfg['rune_warning_eng']['bottom_right'] = normalize_pixel_coordinate(
-            cfg['rune_warning_eng']['bottom_right'], cfg['game_window']['size'])
-        cfg['rune_enable_msg_cn']['top_left'] = normalize_pixel_coordinate(
-            cfg['rune_enable_msg_cn']['top_left'], cfg['game_window']['size'])
-        cfg['rune_enable_msg_cn']['bottom_right'] = normalize_pixel_coordinate(
-            cfg['rune_enable_msg_cn']['bottom_right'], cfg['game_window']['size'])
-        cfg['rune_enable_msg_eng']['top_left'] = normalize_pixel_coordinate(
-            cfg['rune_enable_msg_eng']['top_left'], cfg['game_window']['size'])
-        cfg['rune_enable_msg_eng']['bottom_right'] = normalize_pixel_coordinate(
-            cfg['rune_enable_msg_eng']['bottom_right'], cfg['game_window']['size'])
-        cfg['rune_solver']['arrow_box_coord'] = normalize_pixel_coordinate(
-            cfg['rune_solver']['arrow_box_coord'], cfg['game_window']['size'])
         cfg['ui_coords']['login_button_top_left'] = normalize_pixel_coordinate(
             cfg['ui_coords']['login_button_top_left'], cfg['game_window']['size'])
         cfg['ui_coords']['login_button_bottom_right'] = normalize_pixel_coordinate(
@@ -285,9 +252,6 @@ class MapleStoryAutoBot:
 
         # Init profiler
         self.profiler = Profiler(self.cfg)
-
-        # Init rune solver
-        self.rune_solver = RuneSolver(self.cfg)
 
         # Reset all timers
         self.t_last_frame = time.time()
