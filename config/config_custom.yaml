@@ -12,7 +12,7 @@ key:
   add_hp: ins
   aoe_skill: "\u21E7"
   directional_attack: ''
-  jump: ''
+  jump: "\u2325"
   return_home: ''
   teleport: space
 patrol:
