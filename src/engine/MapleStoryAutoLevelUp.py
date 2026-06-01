@@ -1470,6 +1470,67 @@ class MapleStoryAutoBot:
         if self.cfg["key"]["teleport"] == "" and self.cmd_action == "teleport":
             self.cmd_action = "jump"
 
+    def has_enemy_hp_bar_near_player(self):
+        '''
+        화면 중앙(플레이어 주변) 박스 안에서 몬스터 HP 바(초록 가로 바)를 검출.
+
+        정확색 매칭 대신 "관계형 초록"(G 채널이 R·B 보다 확실히 우세)으로 잡아
+        macOS 리사이즈/색 드리프트(정확색이 0픽셀이 되는 문제)에도 동작한다.
+
+        ⚠️ 캐릭터 자신의 스킬 이펙트(초록 섬광)가 HP 바 1~2개처럼 잡히는 오탐이 있어,
+        바가 hp_bar_min_count 개 이상일 때만 True (실제 몹 무리는 보통 3개 이상).
+
+        검출 박스 = 화면 중앙, 가로 = 화면폭 * hp_bar_box_w_ratio (≈1/3),
+                              세로 = 화면높이 * hp_bar_box_h_ratio (≈1/2).
+        '''
+        if self.img_frame is None:
+            return False
+
+        pc = self.cfg["patrol"]
+        h, w = self.img_frame.shape[:2]
+        bw = int(w * pc.get("hp_bar_box_w_ratio", 0.34))
+        bh = int(h * pc.get("hp_bar_box_h_ratio", 0.5))
+        x0 = (w - bw) // 2
+        y0 = (h - bh) // 2
+        x1, y1 = x0 + bw, y0 + bh
+        roi = self.img_frame[y0:y1, x0:x1]
+
+        # 관계형 초록 마스크: G 가 충분히 밝고, R·B 보다 gdiff 이상 큰 픽셀
+        b = roi[:, :, 0].astype(int)
+        g = roi[:, :, 1].astype(int)
+        r = roi[:, :, 2].astype(int)
+        gmin = pc.get("hp_bar_green_min", 150)
+        gdiff = pc.get("hp_bar_green_diff", 40)
+        mask = ((g > gmin) & (g > r + gdiff) & (g > b + gdiff)).astype(np.uint8) * 255
+
+        # 바 모양(가로로 길고 얇은) 연결 성분만 추림
+        min_w = pc.get("hp_bar_min_w", 6)
+        max_h = pc.get("hp_bar_max_h", 8)
+        min_aspect = pc.get("hp_bar_min_aspect", 2.0)
+        min_count = pc.get("hp_bar_min_count", 3)
+        num_labels, _, stats, _ = \
+            cv2.connectedComponentsWithStats(mask, connectivity=8)
+        bar_count = 0
+        for i in range(1, num_labels):  # 0 = 배경
+            x, y, ww, hh, _ = stats[i]
+            if ww < min_w or not (1 <= hh <= max_h) or ww / max(hh, 1) < min_aspect:
+                continue
+            bar_count += 1
+            if self.img_frame_debug is not None:
+                draw_rectangle(self.img_frame_debug, (x0 + x, y0 + y), (hh, ww),
+                               (0, 255, 255), "HP", thickness=1, text_height=0.4)
+
+        # 바가 min_count 개 이상이어야 "몹 있음"으로 판정 (자기 스킬 이펙트 오탐 회피)
+        detected = bar_count >= min_count
+
+        # 검출 영역 디버그 박스 (판정 성립 시 노랑, 아니면 회색) + 현재 바 개수 표시
+        if self.img_frame_debug is not None:
+            draw_rectangle(self.img_frame_debug, (x0, y0), (bh, bw),
+                           (0, 200, 255) if detected else (120, 120, 120),
+                           f"HP Bar Zone ({bar_count}/{min_count})",
+                           thickness=1, text_height=0.5)
+        return detected
+
     def update_cmd_by_mob_detection(self):
         # Get monster search box
         margin = self.cfg["monster_detect"]["search_box_margin"]

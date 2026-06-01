@@ -107,6 +107,8 @@ class KeyBoardController():
         self.is_enable = True
         self.is_need_force_heal = False
         self.is_terminated = False
+        self.is_attack_held = False # "attack_hold" 명령으로 공격키를 누른 채 유지 중인지
+        self.is_jump_held = False   # "jump_hold" 명령으로 점프키를 누른 채 유지 중인지
         # Parameters
         self.debounce_interval = self.cfg["system"]["key_debounce_interval"]
         self.fps_limit = self.cfg["system"]["fps_limit_keyboard_controller"]
@@ -201,6 +203,10 @@ class KeyBoardController():
         key_up("down")
         # Also release attack keys to stop any ongoing attacks
         key_up(self.attack_key)
+        self.is_attack_held = False
+        # Release held jump key (jump_hold)
+        key_up(self.cfg["key"]["jump"])
+        self.is_jump_held = False
 
     def limit_fps(self):
         '''
@@ -288,12 +294,34 @@ class KeyBoardController():
             ######################
             ### Action Command ###
             ######################
+            # attack_hold / jump_hold 가 풀리면 눌러둔 키를 즉시 뗀다
+            if self.cmd_action != "attack_hold" and self.is_attack_held:
+                key_up(self.attack_key)
+                self.is_attack_held = False
+            if self.cmd_action != "jump_hold" and self.is_jump_held:
+                key_up(self.cfg["key"]["jump"])
+                self.is_jump_held = False
+
             if self.cmd_action == "jump":
                 press_key(self.cfg["key"]["jump"])
+            elif self.cmd_action == "jump_hold":
+                # 점프/로프 구간: 점프키를 누른 채 유지(방향키는 좌-우/상-하 명령으로 이미 홀드).
+                # 구간을 벗어나 명령이 바뀌면 위에서 release.
+                if not self.is_jump_held:
+                    key_down(self.cfg["key"]["jump"])
+                    self.is_jump_held = True
             elif self.cmd_action == "teleport":
                 press_key(self.cfg["key"]["teleport"])
             elif self.cmd_action == "attack":
-                press_key(self.attack_key)
+                # attack_hold 로 이미 공격키를 누르고 있는 동안엔 단발 공격을 추가로 보내지 않는다
+                if not self.is_attack_held:
+                    press_key(self.attack_key)
+                    self.t_last_skill = time.time()
+            elif self.cmd_action == "attack_hold":
+                # 공격키를 누른 채 유지(떼지 않음). HP 바가 사라져 명령이 바뀌면 위에서 release.
+                if not self.is_attack_held:
+                    key_down(self.attack_key)
+                    self.is_attack_held = True
                 self.t_last_skill = time.time()
             elif self.cmd_action == "add_hp":
                 press_key(self.cfg["key"]["add_hp"])

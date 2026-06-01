@@ -30,14 +30,8 @@ class PatrolState(State):
     def check_transitions(self):
         return None
 
-    def on_frame(self):
-        # 루트 따라 이동 (normal 모드와 동일)
-        self.bot.update_cmd_by_route()
-
-        # 루트 목표 지점 도달 시 다음 루트로 순환
-        self.bot.check_reach_goal()
-
-        # 몹 검출 대신 주기적으로 공격 (랜덤 지터 적용)
+    def _attack_on_interval(self):
+        '''공격 간격(랜덤 지터 포함)이 지났으면 cmd_action 을 "attack" 으로 설정.'''
         if self.next_attack_delay is None:
             self.next_attack_delay = self._roll_attack_delay()
         if time.time() - self.bot.t_last_attack > self.next_attack_delay:
@@ -45,11 +39,52 @@ class PatrolState(State):
             self.bot.t_last_attack = time.time()
             self.next_attack_delay = self._roll_attack_delay() # 다음 간격 새로 추첨
 
-        # 끼임 방지: 너무 오래 멈춰있으면 랜덤 명령
-        if self.bot.is_player_stuck():
-            self.bot.update_cmd_by_random()
+    def on_frame(self):
+        bot = self.bot
+
+        # 먼저 루트 명령 계산 (이동/점프/로프 여부를 알아야 분기 가능)
+        bot.update_cmd_by_route()
+        bot.check_reach_goal() # 루트 목표 도달 시 다음 루트로 순환
+
+        # 점프/로프(회색=none up none, 점프 색상 코드) "통과 구간" 여부
+        # 이 구간에선 멈추지 말고 점프키+방향키를 누른 채 통과한다.
+        is_traverse = (bot.cmd_action == "jump" or bot.cmd_move_y in ("up", "down"))
+
+        hp_detect = bot.cfg["patrol"].get("hp_bar_detect", True)
+
+        if is_traverse:
+            # 점프/로프 구간: 멈추지 말고 통과 (HP 바 검출보다 통과 우선).
+            # jump_hold(점프키 홀드)는 "점프 색상코드" 와 "위로 오르는 로프(up)" 에만 적용.
+            # ⚠️ down(연노랑 none down none)에는 점프를 적용하지 않는다.
+            #    점프+아래 = 발판 아래로 드롭 → 루트 밖으로 떨어져 아래키가 안 떨어지는 문제 방지.
+            #    down 은 루트 명령 그대로(방향키만) → 로프를 타고 정상적으로 내려간다.
+            if bot.cmd_action == "teleport" and bot.cmd_move_y == "down":
+                # 텔레포트-다운(보라 none down teleport)은 텔레포트 대신
+                # 그냥 아래 방향키만 눌러 내려가게 한다 (down 로프와 동일 동작).
+                bot.cmd_action = "none"
+            elif bot.cmd_action == "teleport":
+                pass # 그 외 텔레포트(핑크 up / 진녹색·갈색 좌우)는 그대로
+            elif bot.cmd_action == "jump" or bot.cmd_move_y == "up":
+                bot.cmd_action = "jump_hold"
+            # else: down 등은 루트 명령 그대로 유지(점프 없음)
+        elif hp_detect and bot.has_enemy_hp_bar_near_player():
+            # 플레이어 주변에 몹 HP 바가 (min_count 개 이상) 보이면:
+            # 초록 HP 가 사라질 때까지 제자리에서 AOE 키를 "누른 채 유지"(attack_hold).
+            bot.cmd_move_x = "none"
+            bot.cmd_move_y = "none"
+            bot.cmd_action = "attack_hold"
+            # 홀드 중엔 주기 공격 타이머를 계속 리셋 → 홀드가 끝나도
+            # 곧바로 추가 단발 AOE 가 나가지 않도록 한다.
+            bot.t_last_attack = time.time()
+            self.next_attack_delay = None
+        else:
+            # 평소: 루트 따라 이동 + 주기 공격
+            self._attack_on_interval()
+            # 끼임 방지: 너무 오래 멈춰있으면 랜덤 명령
+            if bot.is_player_stuck():
+                bot.update_cmd_by_random()
 
         # send command to keyboard controller
-        self.bot.kb.set_command(self.bot.cmd_move_x + ' ' + \
-                                self.bot.cmd_move_y + ' ' + \
-                                self.bot.cmd_action)
+        bot.kb.set_command(bot.cmd_move_x + ' ' + \
+                           bot.cmd_move_y + ' ' + \
+                           bot.cmd_action)

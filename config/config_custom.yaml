@@ -9,16 +9,19 @@ health_monitor:
   add_mp_percent: 0
   force_heal: true
 key:
-  add_hp: ins
-  aoe_skill: "\u21E7"
+  add_hp: a
+  aoe_skill: a
   directional_attack: ''
   jump: "\u2325"
   return_home: ''
   teleport: space
+monster_detect:
+  mode: grayscale
 patrol:
   patrol_attack_interval: 1.0
   patrol_attack_interval_random: 0.6
+system:
+  fps_limit_route_recorder: 20
+  fps_limit_window_capturor: 20
 teleport:
-  cooldown_random: 0.5
-  is_use_teleport_to_walk: True
-  keep_route_jump: True  
+  is_use_teleport_to_walk: true
