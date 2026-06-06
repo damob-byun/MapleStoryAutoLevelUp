@@ -91,7 +91,7 @@ class SingleKeyEdit(QKeySequenceEdit):
         Return the currently set key as a string, like 'A', 'F1', etc.
         """
         seq = self.keySequence()
-        return seq.toString(QKeySequence.NativeText).strip().lower()
+        return seq.toString(QKeySequence.PortableText).strip().lower()
 
 class QtLogHandler(logging.Handler, QObject):
     '''

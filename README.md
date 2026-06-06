@@ -183,25 +183,7 @@ The monster actions such as `hit`, `move`, `skill`, and `stand` are retained. Wh
 
 Once the download is complete, you can find the downloaded image in the `monster/{MonsterName}` folder.
 
-## Auto Dice Roller
-Auto Dice Roller help you roll the dice in character creation page.
-
-User can assign the desire attributes and let the script do the job for you
-
 ```
-python -m tools.AutoDiceRoller --attribute <STR,DEX,INT,LUK>
-
-Example: for creating a full-INT wizard character:
-python -m tools.AutoDiceRoller --attribute 4,4,13,4
-
-Example: question mark is allowed if you don't want to assign a value
-python -m tools.AutoDiceRoller --attribute 4,4,?,?
-```
-## Discord
-Join our Discord server for more discussions
-
-https://discord.gg/DqjtJGNEx7
-
 ## Legacy Version
 This project previously use full-size screenshot map for camera localization
 and route planning. However, I found that capturing player location from top-left corner minimap in the game is easier and more reliable.
@@ -214,12 +196,3 @@ python -m src.legacy.mapleStoryAutoLevelUp_legacy.py --map <name_of_the_map> --m
 Example:
 python -m src.legacy.mapleStoryAutoLevelUp_legacy.py --map lost_time_1 --monsters evolved_ghost --attack aoe_skill
 ```
-
-## ☕ Support the Developer
-
-If you find this project helpful, consider supporting the developer by buying me a coffee!
-
-> 💡 You can type in any amount you like — $1, $5, or $10 — whatever you're comfortable with.  
-> 💵 Tips are in **USD**, not NTD.
-
-[![Buy Me a Coffee](https://img.shields.io/badge/%F0%9F%92%96_Tip_me_$1_or_more-yellow?style=flat-square&logo=buymeacoffee)](https://www.buymeacoffee.com/kenyu910645)

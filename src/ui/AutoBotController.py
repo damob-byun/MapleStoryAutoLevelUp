@@ -72,6 +72,7 @@ class AutoBotController(QObject):
         self.kb_listener.register_func_key_handler('f1', ui.button_start_pause.click)
         self.kb_listener.register_func_key_handler('f2', ui.button_screenshot.click)
         self.kb_listener.register_func_key_handler('f3', ui.button_record.click)
+        self.kb_listener.register_func_key_handler('f5', ui.button_debug_detect.click)
         self.kb_listener.register_func_key_handler('f12', lambda: ui.request_close.emit())
 
     def start_bot(self, cfg_path):

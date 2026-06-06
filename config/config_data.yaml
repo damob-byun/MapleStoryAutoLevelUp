@@ -1,59 +1,60 @@
-# Translation from English to Chinese
-eng_to_cn:
+# Translation from English to Korean
+eng_to_ko:
   # map
-  ant_cave_2: 螞蟻洞2
-  cloud_balcony: 雲彩露臺
-  dragon_territory: 魔龍領地
-  empty_house: 空屋
-  fire_land_1: 火焰之地1
-  fire_land_2: 火焰之地2
-  first_barrack: 第一軍營
-  land_of_wild_boar: 黑肥肥領土
-  lost_time_1: 遺失的時間1
-  monkey_swamp_3: 猴子沼澤地3
-  mushroom_hills: 菇菇山丘
-  north_forest_training_ground_2: 北部森林訓練場2
-  north_forest_training_ground_8: 北部森林訓練場8
-  pig_shores: 肥肥海岸
-  the_path_of_time_1_for_mage: 時間之路1(需瞬移)
-  garden_of_green_2: 藍光庭園2
-  garden_of_red_2: 紅光庭園2
-  foggy_forest_for_mage: 濃霧森林(需瞬移)
-  101_2f_east: 時尚大道西部區域
-  black_mountain: 烏山深處
-  disposed_flower_garden: 暗影花園
-  mu_Lung_wild_bear_area_2: 野熊的領土2
+  ant_cave_2: 개미굴2
+  cloud_balcony: 구름테라스
+  dragon_territory: 와일드카고의 영역
+  empty_house: 빈집
+  fire_land_1: 불타는 땅1
+  fire_land_2: 불타는 땅2
+  first_barrack: 제1군영
+  land_of_wild_boar: 와일드보어의 땅
+  lost_time_1: 잃어버린 시간1
+  monkey_swamp_3: 원숭이의 늪3
+  mushroom_hills: 버섯동산
+  north_forest_training_ground_2: 북쪽숲나무던전2
+  north_forest_training_ground_8: 북쪽숲나무던전8
+  pig_shores: 돼지의 해안가
+  the_path_of_time_1_for_mage: 시간의길1(마법사)
+  garden_of_green_2: 푸른 빛의 정원2
+  garden_of_red_2: 붉은 빛의 정원2
+  foggy_forest_for_mage: 안개낀숲(마법사)
+  101_2f_east: 패션 애비뉴 서쪽구역
+  black_mountain: 까막산 기슭
+  disposed_flower_garden: 버려진 화원
+  mu_Lung_wild_bear_area_2: 야생곰의 영토2
   forest_of_dead_trees_2: 죽숲2
   # monster
   coolie_zombie: 쿨리좀비
-  zombie_lupin: 天使猴
-  black_axe_stump: 黑斧木妖
-  brown_windup_bear: 褐色發條熊
-  cold_eye: 冰獨眼獸
-  evolved_ghost: 進化妖魔
-  fire_boar: 火肥肥
-  green_mushroom: 綠菇菇
-  mushroom: 菇菇寶貝
-  pig: 肥肥
-  pink_windup_bear: 粉色發條熊
-  ribbon_pig: 緞帶肥肥
-  skeleton_officer: 骷髏隊長
-  skeleton_soldier: 骷髏士兵
-  spike_mushroom: 刺菇菇
-  wild_boar: 黑肥肥
-  wild_kargo: 魔龍
-  wind_single_eye_beast: 風獨眼獸
-  zombie_mushroom: 殭屍菇菇
-  grupin: 藍獨角獅
-  red_cellion: 紅獨角獅
-  the_book_ghost: 書靈
-  blue_perfume: 冷豔香水
-  grizzly: 功夫熊
-  panda: 柔道貓熊
-  hodori: 小虎
-  moon_bunny: 月妙
-  nependeath: 食人花
-  dark_nependeath: 黑食人花
+  zombie_lupin: 좀비루팡
+  black_axe_stump: 다크 엑스스텀프
+  brown_windup_bear: 브라운테디
+  cold_eye: 콜드아이
+  evolved_ghost: 플래툰 크로노스
+  fire_boar: 파이어보어
+  green_mushroom: 초록버섯
+  mushroom: 주황버섯
+  pig: 돼지
+  pink_windup_bear: 핑크테디
+  ribbon_pig: 리본돼지
+  skeleton_officer: 스켈레톤 사관
+  skeleton_soldier: 스켈레톤 사병
+  spike_mushroom: 뿔버섯
+  wild_boar: 와일드보어
+  wild_kargo: 와일드카고
+  wind_single_eye_beast: 커즈아이
+  zombie_mushroom: 좀비버섯
+  grupin: 그루핀
+  red_cellion: 샐리온
+  the_book_ghost: 묘선
+  blue_perfume: 블루 퍼퓸
+  grizzly: 그리즐리
+  panda: 팬더
+  hodori: 호돌이
+  moon_bunny: 월묘
+  nependeath: 네펜데스
+  dark_nependeath: 다크 네펜데스
+  black_kentaurus: 블랙 켄타로스
 
 # Register mobs in each maps
 map_mobs_mapping:
@@ -80,3 +81,4 @@ map_mobs_mapping:
   disposed_flower_garden: [nependeath, dark_nependeath]
   mu_Lung_wild_bear_area_2: [grizzly, panda]
   forest_of_dead_trees_2: [coolie_zombie]
+  black_kentaurus_area: [black_kentaurus]

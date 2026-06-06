@@ -438,12 +438,12 @@ class MainWindow(QMainWindow):
             if name.startswith("."):
                 continue  # Skip hidden/system files
 
-            if name in self.data["eng_to_cn"]:
-                name_cn = self.data["eng_to_cn"][name]
+            if name in self.data["eng_to_ko"]:
+                name_ko = self.data["eng_to_ko"][name]
                 full_path = os.path.join(minimap_dir, name)
                 if os.path.isdir(full_path):
-                    # self.list_widget_maps.addItem(f"{name} ({name_cn})")
-                    display_text = f"{name} ({name_cn})"
+                    # self.list_widget_maps.addItem(f"{name} ({name_ko})")
+                    display_text = f"{name} ({name_ko})"
                     item = QListWidgetItem(display_text)
                     item.setData(Qt.UserRole, name)
                     self.list_widget_maps.addItem(item)
@@ -521,6 +521,11 @@ class MainWindow(QMainWindow):
         self.button_record.setCheckable(True)
         self.button_record.clicked.connect(self.toggle_record_ui)
 
+        # Debug Detect Button
+        self.button_debug_detect = QPushButton("🔍 Debug (F5)")
+        self.button_debug_detect.setCheckable(True)
+        self.button_debug_detect.clicked.connect(self.toggle_debug_detect_ui)
+
         # Bot Mode Dropdown
         layout_bot_mode = QHBoxLayout()
         layout_bot_mode.setSpacing(8)
@@ -534,6 +539,7 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.button_start_pause)
         button_layout.addWidget(self.button_screenshot)
         button_layout.addWidget(self.button_record)
+        button_layout.addWidget(self.button_debug_detect)
         button_layout.addLayout(layout_bot_mode)
 
         layout.addLayout(button_layout)
@@ -839,12 +845,19 @@ class MainWindow(QMainWindow):
                      f"{'Enabled' if enabled else 'Disabled'}")
 
     def toggle_start_ui(self):
+        if not self.button_start_pause.isEnabled():
+            self.button_start_pause.setChecked(not self.button_start_pause.isChecked()) # revert state change
+            return
+
         if self.button_start_pause.isChecked(): # When start autobot
             self.update_cfg_from_main_ui()
 
             # Save UI config to tmp file
             cfg_path = "config/.config_tmp.yaml"
             save_yaml(self.cfg, cfg_path)
+
+            # Ensure disable_control is False
+            self.controller.auto_bot.is_disable_control = False
 
             # Start AutoBot
             ret = self.controller.start_bot(cfg_path)
@@ -853,6 +866,7 @@ class MainWindow(QMainWindow):
                 self.button_start_pause.setText("⏸ Pause (F1)")
                 self.button_start_pause.setStyleSheet("background-color: lightgreen;")
                 self.set_gbox_enabled(False)
+                self.button_debug_detect.setEnabled(False)
             else:
                 # Start failed
                 self.button_start_pause.setChecked(False)
@@ -862,6 +876,45 @@ class MainWindow(QMainWindow):
             self.button_start_pause.setStyleSheet("")
             self.controller.pause_bot()
             self.set_gbox_enabled(True)
+            self.button_debug_detect.setEnabled(True)
+            clear_debug_canvas(self.debug_canvas) # Set debug viz to null
+            clear_debug_canvas(self.route_map_canvas) # Set debug viz to null
+
+    def toggle_debug_detect_ui(self):
+        if not self.button_debug_detect.isEnabled():
+            self.button_debug_detect.setChecked(not self.button_debug_detect.isChecked()) # revert state change
+            return
+
+        if self.button_debug_detect.isChecked(): # When start debug detect
+            self.update_cfg_from_main_ui()
+
+            # Save UI config to tmp file
+            cfg_path = "config/.config_tmp.yaml"
+            save_yaml(self.cfg, cfg_path)
+
+            # Ensure disable_control is True
+            self.controller.auto_bot.is_disable_control = True
+
+            # Start AutoBot
+            ret = self.controller.start_bot(cfg_path)
+
+            if ret == 0: # Start success
+                self.button_debug_detect.setText("⏸ Stop (F5)")
+                self.button_debug_detect.setStyleSheet("background-color: lightblue;")
+                self.set_gbox_enabled(False)
+                self.button_start_pause.setEnabled(False)
+            else:
+                # Start failed
+                self.button_debug_detect.setChecked(False)
+                self.controller.auto_bot.is_disable_control = False
+
+        else: # When stop debug detect
+            self.button_debug_detect.setText("🔍 Debug (F5)")
+            self.button_debug_detect.setStyleSheet("")
+            self.controller.pause_bot()
+            self.controller.auto_bot.is_disable_control = False
+            self.set_gbox_enabled(True)
+            self.button_start_pause.setEnabled(True)
             clear_debug_canvas(self.debug_canvas) # Set debug viz to null
             clear_debug_canvas(self.route_map_canvas) # Set debug viz to null
 

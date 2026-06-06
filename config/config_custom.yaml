@@ -2,8 +2,15 @@ aoe_skill:
   range_x: 350
 bot:
   attack: aoe_skill
-  map: forest_of_dead_trees_2
+  map: garden_of_red_2
   mode: patrol
+buff_skill:
+  cooldown:
+  - 200
+  - 500
+  keys:
+  - d
+  - shift
 health_monitor:
   add_hp_percent: 70
   add_mp_percent: 0
@@ -12,7 +19,7 @@ key:
   add_hp: a
   aoe_skill: a
   directional_attack: ''
-  jump: "\u2325"
+  jump: alt
   return_home: ''
   teleport: space
 monster_detect:

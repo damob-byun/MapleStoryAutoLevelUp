@@ -2,7 +2,7 @@
 # The following configuration is only for macOS
 
 game_window:
-  size: [541, 960]
+  size: [832, 1366]
   title_bar_height: 31         # 📐 Title Bar Height (Note titel bar will be cropped before window resize)
 
 health_monitor:
@@ -19,10 +19,10 @@ monster_detect:
   # macOS 캡처에선 기본값 "contour_only" 가 coolie_zombie 를 거의 못 잡음
   # (최저 score ~0.8+, 검출 임계값 미달). color/grayscale 는 ~0.2 로 잘 잡힘.
   # → "color"(가장 정확) 사용. 느리면 "grayscale" 로 교체.
-  mode: "color"
+  mode: "grayscale"
   # 화면 속 몹(~45px)이 background UI/지형과 섞여도 오탐이 적도록 약간 엄격하게.
   # 실제 몹 매칭 score ~0.2, 첫 오탐 ~0.4 사이라 0.4 로 컷.
-  diff_thres: 0.4
+  diff_thres: 0.7
   hp_bar_color: [90, 201, 108] # (B,G,R)
   # macOS: 작은 창이라 화면 속 몹이 템플릿보다 작음 → 템플릿을 미리 축소.
   # 화면 속 coolie_zombie 몸높이 ~45px / 오피셜 템플릿 ~90px ≈ 0.5.

@@ -162,5 +162,5 @@ monster/<mob_name>/
 
 1. `python tools/mob_maker.py` 로 스프라이트 다운로드 → `monster/<name>/` 생성.
 2. `config/config_data.yaml` 의 `map_mobs_mapping` 에 `<해당 맵>: [<mob1>, <mob2>, ...]` 항목 추가/수정.
-3. (선택) `eng_to_cn` 사전에도 영문↔중문 이름 매핑 추가.
+3. (선택) `eng_to_ko` 사전에도 영문↔국문 이름 매핑 추가.
 4. 봇 실행 시 자동으로 새 몬스터를 인식 후보로 사용.

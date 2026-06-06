@@ -5,6 +5,7 @@ Simulate user keyboard input to control character in the game
 # Standard Import
 import threading
 import time
+import random
 
 # Library import
 import pyautogui
@@ -21,8 +22,8 @@ else:
 
 pyautogui.PAUSE = 0  # remove delay
 
-# UI 가 모디파이어 키를 기호(⇧⌥⌃⌘)로 저장하는데 pyautogui 는 키 이름 문자열을
-# 받으므로 변환해 준다. (macOS UI 키 캡처 대응)
+# UI 가 모디파이어 키를 기호(⇧⌥⌃⌘) 또는 표준 텍스트로 저장하는데 pyautogui 는 키 이름 문자열을
+# 받으므로 변환해 준다.
 KEY_SYMBOL_MAP = {
     "⇧": "shift",   # ⇧
     "⌥": "option",  # ⌥  (pyautogui: option == alt 별칭)
@@ -32,6 +33,14 @@ KEY_SYMBOL_MAP = {
     "⌫": "backspace",  # ⌫
     "⇥": "tab",     # ⇥
     "␣": "space",   # ␣
+    "shift": "shift",
+    "alt": "option" if is_mac() else "alt",
+    "ctrl": "ctrl",
+    "meta": "command" if is_mac() else "win",
+    "enter": "enter",
+    "backspace": "backspace",
+    "tab": "tab",
+    "space": "space",
 }
 
 def normalize_key(key):
@@ -103,6 +112,7 @@ class KeyBoardController():
         self.t_last_run = time.time()
         self.t_last_skill = 0.0 # Last time character perform action(attack, cast spell, ...)
         self.t_last_buff_cast = [0] * len(self.cfg["buff_skill"]["keys"]) # Last time cast buff skill
+        self.t_next_buff_cast = [0] * len(self.cfg["buff_skill"]["keys"]) # Next time to cast buff skill with random offset
         # Flags
         self.is_enable = True
         self.is_need_force_heal = False
@@ -236,12 +246,15 @@ class KeyBoardController():
             # Buff skill
             for i, buff_skill_key in enumerate(self.cfg["buff_skill"]["keys"]):
                 cooldown = self.cfg["buff_skill"]["cooldown"][i]
-                if time.time() - self.t_last_buff_cast[i] >= cooldown and \
+                if time.time() >= self.t_next_buff_cast[i] and \
                     time.time() - self.t_last_skill > self.cfg["buff_skill"]["action_cooldown"]:
                     press_key(buff_skill_key)
-                    logger.info(f"[Buff] Press buff skill key: '{buff_skill_key}' (cooldown: {cooldown}s)")
+                    # Calculate randomized next cast time (cooldown +- 5%)
+                    rand_cooldown = cooldown * random.uniform(0.95, 1.05)
+                    logger.info(f"[Buff] Press buff skill key: '{buff_skill_key}' (base cooldown: {cooldown}s, randomized: {rand_cooldown:.2f}s)")
                     # Reset timers
                     self.t_last_buff_cast[i] = time.time()
+                    self.t_next_buff_cast[i] = time.time() + rand_cooldown
                     self.t_last_skill = time.time()
                     break
 
