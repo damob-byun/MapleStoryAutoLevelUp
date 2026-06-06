@@ -26,6 +26,81 @@ def get_window_title(token):
             return title
     return None
 
+def get_window_owner_pid(window_title):
+    '''
+    Return the owner process PID of the on-screen window whose title matches.
+    '''
+    window_list = Quartz.CGWindowListCopyWindowInfo(
+        Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+        Quartz.kCGNullWindowID
+    )
+    for window in window_list:
+        if window.get(Quartz.kCGWindowName, '') == window_title:
+            return window.get(Quartz.kCGWindowOwnerPID)
+    return None
+
+def resize_window_mac(window_title, width_pt, height_pt):
+    '''
+    Resize a macOS window via the Accessibility (AX) API.
+
+    width_pt / height_pt are in *points* (the AX coordinate space). On Retina
+    displays points = pixels / backing_scale, so the caller must convert from
+    desired pixel size using the capture scale.
+
+    Requires Accessibility permission for the app running Python
+    (System Settings > Privacy & Security > Accessibility). Returns True on
+    success, False otherwise (logs a warning). Never raises.
+    '''
+    try:
+        from ApplicationServices import (
+            AXUIElementCreateApplication, AXUIElementCopyAttributeValue,
+            AXUIElementSetAttributeValue, AXValueCreate, AXIsProcessTrusted,
+            kAXWindowsAttribute, kAXSizeAttribute, kAXTitleAttribute,
+            kAXValueTypeCGSize,
+        )
+    except Exception as e:  # pragma: no cover - framework missing
+        logger.warning(f"[resize_window_mac] AX framework unavailable: {e}")
+        return False
+
+    if not AXIsProcessTrusted():
+        logger.warning(
+            "[resize_window_mac] 손쉬운 사용(Accessibility) 권한이 없어 창 크기를 "
+            "조정할 수 없습니다. 시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용 "
+            "에서 터미널/IDE 를 허용하세요."
+        )
+        return False
+
+    pid = get_window_owner_pid(window_title)
+    if pid is None:
+        logger.warning(f"[resize_window_mac] window not found: {window_title}")
+        return False
+
+    app = AXUIElementCreateApplication(pid)
+    err, windows = AXUIElementCopyAttributeValue(app, kAXWindowsAttribute, None)
+    if err or not windows:
+        logger.warning(f"[resize_window_mac] no AX windows for pid {pid} (err={err})")
+        return False
+
+    # Prefer the window whose title matches; fall back to the first window.
+    target = None
+    for win in windows:
+        _, title = AXUIElementCopyAttributeValue(win, kAXTitleAttribute, None)
+        if title == window_title:
+            target = win
+            break
+    if target is None:
+        target = windows[0]
+
+    size_val = AXValueCreate(kAXValueTypeCGSize,
+                             Quartz.CGSizeMake(float(width_pt), float(height_pt)))
+    set_err = AXUIElementSetAttributeValue(target, kAXSizeAttribute, size_val)
+    if set_err:
+        logger.warning(f"[resize_window_mac] set size failed (err={set_err})")
+        return False
+    logger.info(f"[resize_window_mac] resized '{window_title}' to "
+                f"{width_pt:.0f}x{height_pt:.0f} pt")
+    return True
+
 def get_window_region(window_title):
     window_list = Quartz.CGWindowListCopyWindowInfo(
         Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
@@ -84,6 +159,49 @@ class GameWindowCapturor:
         time.sleep(0.1)
         while self.frame is None:
             self.limit_fps()
+
+        # Auto-resize the game window so the captured frame matches game_window.size
+        if cfg["game_window"].get("auto_resize", True):
+            self.resize_to_target()
+
+    def resize_to_target(self):
+        '''
+        Resize the game window (via AX) so the captured frame ends up the size
+        configured in game_window.size (+ title_bar_height for the title bar).
+
+        Works in pixel space but the AX API expects points, so it derives the
+        display scale from the already-captured frame:
+            scale = frame_pixels_width / window_region_points_width
+        and sets the AX size to target_pixels / scale.
+        '''
+        gw = self.cfg["game_window"]
+        with self.lock:
+            frame = None if self.frame is None else self.frame.copy()
+        if frame is None or not self.region or not self.region.get("width"):
+            return
+
+        cur_w_px, cur_h_px = frame.shape[1], frame.shape[0]
+        target_w_px = gw["size"][1]
+        target_h_px = gw["size"][0] + gw["title_bar_height"]
+
+        # Already the right size (allow a few px tolerance) -> nothing to do.
+        if abs(cur_w_px - target_w_px) <= 4 and abs(cur_h_px - target_h_px) <= 4:
+            logger.info(f"[GameWindowCapturor] window already {cur_w_px}x{cur_h_px}px, "
+                        f"no resize needed")
+            return
+
+        scale = cur_w_px / float(self.region["width"])  # pixels per point
+        if scale <= 0:
+            return
+        target_w_pt = target_w_px / scale
+        target_h_pt = target_h_px / scale
+
+        logger.info(f"[GameWindowCapturor] resizing window: captured "
+                    f"{cur_w_px}x{cur_h_px}px -> target {target_w_px}x{target_h_px}px "
+                    f"(scale={scale:.2f}, AX {target_w_pt:.0f}x{target_h_pt:.0f}pt)")
+        if resize_window_mac(self.window_title, target_w_pt, target_h_pt):
+            time.sleep(0.3)  # let the window settle
+            self.update_window_region()
 
     def start_capture(self):
         '''

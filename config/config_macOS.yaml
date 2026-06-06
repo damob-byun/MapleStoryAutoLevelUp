@@ -4,6 +4,11 @@
 game_window:
   size: [832, 1366]
   title_bar_height: 31         # 📐 Title Bar Height (Note titel bar will be cropped before window resize)
+  # 🪟 창 크기 자동 조정 (macOS, Accessibility API 사용)
+  # 캡처된 프레임이 size 와 다르면 게임 창을 size(+타이틀바)에 맞게 자동 리사이즈.
+  # ⚠️ 시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용 에 터미널/IDE 허용 필요.
+  #    권한이 없으면 경고만 남기고 그대로 진행(소프트웨어 리사이즈로 동작).
+  auto_resize: True
 
 health_monitor:
   # macOS: 작은 창이라 HP/MP/EXP 바에 흰 테두리가 없어 자동 검출 불가.

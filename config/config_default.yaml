@@ -277,6 +277,7 @@ game_window:
   size: [693, 1282]            # 📐 게임 창 크기 [높이, 너비] (픽셀, 타이틀바 제외)
   ratio_tolerance: 0.08        # 📐 게임 창 16:9 허용 오차
   title_bar_height: 59         # 📐 타이틀바 높이 (창 리사이즈 전 값임에 주의)
+  auto_resize: True            # 🪟 (macOS) 캡처 프레임이 size 와 다르면 창을 자동 리사이즈 (Accessibility 권한 필요)
 
 email:
   # 📩 이메일
