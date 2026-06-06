@@ -2,8 +2,7 @@ aoe_skill:
   range_x: 350
 bot:
   attack: aoe_skill
-  map: garden_of_red_2
-  mode: patrol
+  map: black_kentauros_area
 buff_skill:
   cooldown:
   - 200
@@ -22,8 +21,6 @@ key:
   jump: alt
   return_home: ''
   teleport: space
-monster_detect:
-  mode: grayscale
 patrol:
   patrol_attack_interval: 1.0
   patrol_attack_interval_random: 0.6

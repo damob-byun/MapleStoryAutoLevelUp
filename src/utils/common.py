@@ -393,7 +393,8 @@ def to_standard_hsv(color_hsv):
     return (h_std, s_std, v_std)
 
 def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
-                         min_border_sides=4, border_ratio=1.0):
+                         min_border_sides=4, border_ratio=1.0,
+                         use_fixed_ratios=False, rect_ratios=None):
     '''
     Detects the location and size of the minimap within the game frame.
 
@@ -416,20 +417,48 @@ def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
         border_ratio (float): Fraction of a border that must be pure white for
             that border to count. 1.0 = the entire edge must be white
             (original behavior).
+        use_fixed_ratios (bool): If True, use fixed ratios relative to the window size to crop the minimap.
+        rect_ratios (list/tuple): [x_ratio, y_ratio, w_ratio, h_ratio] relative to window size.
 
     Returns:
         (x, y, w, h): Top-left coordinate and width/height of the minimap.
                     Returns None if not found.
     '''
-    white = np.array([255, 255, 255])
-    H, W = img_frame.shape[:2]
+    if use_fixed_ratios and rect_ratios is not None:
+        H, W = img_frame.shape[:2]
+        xr, yr, wr, hr = rect_ratios
+        x = int(round(xr * W))
+        y = int(round(yr * H))
+        w = int(round(wr * W))
+        h = int(round(hr * H))
+        return x, y, w, h
 
-    # Mask for pure white
-    mask_white = cv2.inRange(img_frame, white, white)
+    is_mac_platform = is_mac()
+    # macOS 의 "상세(WORLD)" 미니맵은 테두리가 순수 흰색이 아니라 베벨/안티앨리어싱
+    # 으로 ~237 까지 떨어진다. 또 맵 콘텐츠를 감싸는 내부 테두리도 상/하변이 237,
+    # 좌/우변이 255 로 섞여 있어 임계값 240 이면 상/하변을 놓쳐 검출이 실패한다.
+    # → 235 로 낮춰 237 테두리까지 포함시킨다 (232 이하로 더 낮추면 인접 near-white
+    #   영역과 병합되어 박스가 깨지므로 235 가 안전한 하한).
+    white_t = 235 if is_mac_platform else 255
+    if is_mac_platform:
+        mask_white = cv2.inRange(img_frame,
+                                 np.array([white_t, white_t, white_t]),
+                                 np.array([255, 255, 255]))
+    else:
+        white = np.array([255, 255, 255])
+        mask_white = cv2.inRange(img_frame, white, white)
+
+    H, W = img_frame.shape[:2]
 
     # Connected components with stats
     num_labels, labels, stats, centroids = \
         cv2.connectedComponentsWithStats(mask_white, connectivity=8)
+
+    # macOS 상세 미니맵에는 흰테두리 박스가 여러 개(타이틀바/맵이름 배너/맵 콘텐츠)
+    # 잡힌다. 맵 콘텐츠 프레임이 가장 크므로, 통과하는 후보 중 "가장 큰" 것을 고른다.
+    # (Windows 는 기존처럼 첫 번째 매칭을 즉시 반환해 동작 변화 없음)
+    best = None
+    best_area = -1
 
     # Loop over components (skip label 0, which is background)
     for i in range(1, num_labels):
@@ -447,10 +476,16 @@ def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
         y1 = y0 + rh - 1
 
         # Compute white ratio of each of the 4 borders
-        top = float(np.mean(np.all(img_frame[y0, x0:x0+rw] == white, axis=1)))
-        bot = float(np.mean(np.all(img_frame[y1, x0:x0+rw] == white, axis=1)))
-        lft = float(np.mean(np.all(img_frame[y0:y0+rh, x0] == white, axis=1)))
-        rgt = float(np.mean(np.all(img_frame[y0:y0+rh, x1] == white, axis=1)))
+        if is_mac_platform:
+            top = float(np.mean(np.all(img_frame[y0, x0:x0+rw] >= white_t, axis=1)))
+            bot = float(np.mean(np.all(img_frame[y1, x0:x0+rw] >= white_t, axis=1)))
+            lft = float(np.mean(np.all(img_frame[y0:y0+rh, x0] >= white_t, axis=1)))
+            rgt = float(np.mean(np.all(img_frame[y0:y0+rh, x1] >= white_t, axis=1)))
+        else:
+            top = float(np.mean(np.all(img_frame[y0, x0:x0+rw] == white, axis=1)))
+            bot = float(np.mean(np.all(img_frame[y1, x0:x0+rw] == white, axis=1)))
+            lft = float(np.mean(np.all(img_frame[y0:y0+rh, x0] == white, axis=1)))
+            rgt = float(np.mean(np.all(img_frame[y0:y0+rh, x1] == white, axis=1)))
 
         # Require at least `min_border_sides` borders to be (mostly) white
         sides_ok = sum(s >= border_ratio for s in (top, bot, lft, rgt))
@@ -458,7 +493,10 @@ def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
             continue
 
         # Create a mask of non-white pixels
-        mask_minimap = np.any(img_frame[y0:y0+rh, x0:x0+rw] != white, axis=2).astype(np.uint8)
+        if is_mac_platform:
+            mask_minimap = np.any(img_frame[y0:y0+rh, x0:x0+rw] < white_t, axis=2).astype(np.uint8)
+        else:
+            mask_minimap = np.any(img_frame[y0:y0+rh, x0:x0+rw] != white, axis=2).astype(np.uint8)
 
         # Find bounding box of mask_minimap
         coords = cv2.findNonZero(mask_minimap)
@@ -470,7 +508,16 @@ def get_minimap_loc_size(img_frame, min_size=100, search_region_ratio=1.0,
         x_minimap += x0
         y_minimap += y0
 
-        return x_minimap, y_minimap, w_minimap, h_minimap
+        if not is_mac_platform:
+            return x_minimap, y_minimap, w_minimap, h_minimap
+
+        # macOS: keep the largest valid candidate (the map content frame)
+        if rw * rh > best_area:
+            best_area = rw * rh
+            best = (x_minimap, y_minimap, w_minimap, h_minimap)
+
+    if best is not None:
+        return best
 
     logger.warning("Minimap not found in the game frame.")
     return None  # minimap not found
@@ -832,6 +879,24 @@ def is_img_16_to_9(img, cfg):
     tolerance = cfg["game_window"]["ratio_tolerance"]
     h, w = img.shape[:2]
     return abs(w/h - 16/9) <= tolerance
+
+def is_img_expected_ratio(img, cfg):
+    """
+    Check if image aspect ratio matches the configured game_window.size ratio
+    within ratio_tolerance.
+
+    Used instead of an exact pixel-size match so the game window can be any
+    size as long as its aspect ratio is correct. The frame is resized to
+    WINDOW_WORKING_SIZE afterwards, so the exact pixel size doesn't matter --
+    only the ratio. This is important on macOS where the captured window size
+    can't be set precisely (no programmatic resize), so requiring an exact
+    pixel match would reject every frame and break minimap detection.
+    """
+    tolerance = cfg["game_window"]["ratio_tolerance"]
+    h_win, w_win = cfg["game_window"]["size"]
+    expect_ratio = w_win / h_win
+    h, w = img.shape[:2]
+    return abs(w/h - expect_ratio) <= tolerance
 
 def normalize_pixel_coordinate(coord, window_size):
     '''

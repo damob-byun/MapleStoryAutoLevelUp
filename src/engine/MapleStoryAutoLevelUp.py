@@ -25,7 +25,8 @@ from src.utils.common import (find_pattern_sqdiff, draw_rectangle, screenshot, n
     load_image, get_mask, get_minimap_loc_size, get_player_location_on_minimap,
     is_mac, override_cfg, load_yaml, get_all_other_player_locations_on_minimap,
     click_in_game_window, mask_route_colors, to_opencv_hsv, debug_minimap_colors,
-    activate_game_window, is_img_16_to_9, normalize_pixel_coordinate, resize_window
+    activate_game_window, is_img_16_to_9, is_img_expected_ratio,
+    normalize_pixel_coordinate, resize_window
 )
 from src.input.KeyBoardController import KeyBoardController, press_key
 from src.input.KeyBoardListener import KeyBoardListener
@@ -932,10 +933,17 @@ class MapleStoryAutoBot:
                 logger.error(text)
                 return
         else:
-            # Other mode only allow specific resolution
-            if self.cfg["game_window"]["size"] != frame_no_title.shape[:2]:
-                text = f"Unexpeted window size: {frame_no_title.shape[:2]} "\
-                       f"(expect {self.cfg['game_window']['size']})\n"
+            # Accept any window size whose aspect ratio matches game_window.size
+            # (within ratio_tolerance). The frame is resized to
+            # WINDOW_WORKING_SIZE below, so the exact pixel size doesn't matter
+            # -- only the ratio. On macOS the captured window size can't be set
+            # precisely, so an exact pixel match would reject every frame.
+            if not is_img_expected_ratio(frame_no_title, self.cfg):
+                h, w = frame_no_title.shape[:2]
+                h_win, w_win = self.cfg["game_window"]["size"]
+                text = f"Unexpeted window ratio: {frame_no_title.shape[:2]} "\
+                       f"(ratio {w/h:.3f}, expect ~{w_win/h_win:.3f} "\
+                       f"from {self.cfg['game_window']['size']})\n"
                 text += "Please use windowed mode & smallest resolution."
                 logger.error(text)
                 return
@@ -1637,16 +1645,22 @@ class MapleStoryAutoBot:
         # Get minimap coordinate and size on game window
         # macOS: 캡처를 확대(960→1296)하면서 미니맵 흰 테두리가 깨지고
         # 지도 콘텐츠가 하단 테두리에 닿으므로 완화된 검출 파라미터 사용.
-        if is_mac():
-            minimap_result = get_minimap_loc_size(
-                self.img_frame,
-                min_size=80,
-                search_region_ratio=0.5,
-                min_border_sides=3,
-                border_ratio=0.8,
-            )
-        else:
-            minimap_result = get_minimap_loc_size(self.img_frame)
+        min_size = self.cfg["minimap"].get("min_size", 80 if is_mac() else 100)
+        search_region_ratio = self.cfg["minimap"].get("search_region_ratio", 0.5 if is_mac() else 1.0)
+        min_border_sides = self.cfg["minimap"].get("min_border_sides", 3 if is_mac() else 4)
+        border_ratio = self.cfg["minimap"].get("border_ratio", 0.8 if is_mac() else 1.0)
+        use_fixed_ratios = self.cfg["minimap"].get("use_fixed_ratios", False)
+        rect_ratios = self.cfg["minimap"].get("rect_ratios", None)
+
+        minimap_result = get_minimap_loc_size(
+            self.img_frame,
+            min_size=min_size,
+            search_region_ratio=search_region_ratio,
+            min_border_sides=min_border_sides,
+            border_ratio=border_ratio,
+            use_fixed_ratios=use_fixed_ratios,
+            rect_ratios=rect_ratios,
+        )
         if minimap_result is None:
             if time.time() - self.t_last_minimap_update > 30:
                 # Unable to get minimap for 30 seconds -> assume it's login screen
@@ -1680,7 +1694,13 @@ class MapleStoryAutoBot:
         ### Player Location Detection ###
         #################################
         # Get player location in game window
-        if self.cfg["nametag"]["enable"]:
+        # 메이플은 카메라가 플레이어를 화면 중앙에 고정하므로, nametag/party_red_bar
+        # 검출이 불가능한 환경(예: macOS, 파티 미가입)에서는 화면 중앙을 그대로
+        # 플레이어 위치로 쓴다. (use_screen_center=True 시 검출 건너뜀)
+        if self.cfg.get("player_pos", {}).get("use_screen_center", False):
+            h_frame, w_frame = self.img_frame.shape[:2]
+            loc_player = (w_frame // 2, h_frame // 2)
+        elif self.cfg["nametag"]["enable"]:
             loc_player = self.get_player_location_by_nametag()
         else:
             loc_player, loc_party_red_bar = self.get_player_location_by_party_red_bar()

@@ -15,6 +15,15 @@ health_monitor:
   mp_bar_rect:  [439, 62, 145, 21]
   exp_bar_rect: [592, 62, 158, 21]
 
+player_pos:
+  # macOS: 파티 빨간바/nametag 검출이 불안정 → 플레이어를 화면 중앙으로 고정.
+  # (카메라가 플레이어를 중앙에 두므로 normal 모드 몹 검색 박스가 캐릭터 주변에 생김)
+  use_screen_center: False
+
+nametag:
+  enable: True
+  name: "name"
+
 monster_detect:
   # macOS 캡처에선 기본값 "contour_only" 가 coolie_zombie 를 거의 못 잡음
   # (최저 score ~0.8+, 검출 임계값 미달). color/grayscale 는 ~0.2 로 잘 잡힘.
@@ -33,6 +42,31 @@ minimap:
   player_color: [84, 255, 255] # BGR
   other_player_color: [20, 15, 228] # BGR
   debug_window_upscale: 2
+  # 🗺️ 미니맵 자동 검출 (macOS 상세 미니맵)
+  # macOS 의 "상세(WORLD)" 미니맵은 맵 콘텐츠를 감싸는 내부 테두리가
+  # 순수 흰색이 아니라 ~237(베벨/안티앨리어싱)이라, get_minimap_loc_size 의
+  # 흰색 임계값을 235 로 낮춰(common.py) 자동 검출한다.
+  # ⚠️ 고정 비율(use_fixed_ratios)은 쓰지 않는다 — 맵 진입 시 뜨는 "맵 이름
+  #    배너"(아이콘+지역명)가 콘텐츠를 아래로 밀어 위치가 맵마다 달라지므로
+  #    고정 비율로는 어긋난다. 자동 검출은 콘텐츠 테두리를 매 프레임 찾으므로 OK.
+  search_region_ratio: 0.5        # 📐 좌상단 1/2 영역만 탐색
+  min_border_sides: 3             # 📐 4면 중 3면만 흰색이면 통과 (하변이 지형에 닿아 깨짐)
+  border_ratio: 0.8               # 📐 각 테두리 80% 이상 흰색
+  min_size: 80                    # 📐 미니맵 최소 크기(px)
+  use_fixed_ratios: False
+  rect_ratios: [0.010, 0.053, 0.180, 0.124]  # use_fixed_ratios:True 일 때만 사용 (비권장)
+
+patrol:
+  # 🟢 주변 HP 바 검출 모양 필터 (초록 잎/풀 오검출 억제)
+  # 검은 켄타우로스 지역처럼 배경이 온통 초록인 맵에선 "관계형 초록"이
+  # 잎사귀/덤불을 HP 바로 오검출함(완화 필터로 한 프레임에 40+ 가짜 바).
+  # 진짜 몬스터 HP 바는 매우 얇고(높이 2~3px) 가로로 길다(aspect 7~13).
+  # → 모양을 엄격히 조여 잎사귀(높이 5~8px, 낮은 aspect)를 걸러낸다.
+  #    (검증: 동일 프레임에서 가짜 바 43개 → 1개, min_count(3) 미만이라 오발동 없음)
+  hp_bar_max_h: 4          # 📏 HP 바 최대 높이(px). 잎사귀 덩어리는 보통 5px 이상
+  hp_bar_min_w: 12         # 📏 HP 바 최소 너비(px)
+  hp_bar_min_aspect: 4.0   # 📏 최소 가로/세로 비. 잎사귀의 작은 초록 덩어리 제거
+  hp_bar_min_count: 3      # 🔢 이 개수 이상일 때만 "몹 있음" 판정
 
 party_red_bar:
   lower_red: [4, 80, 50] # ❤️ HSV, darker red of party health bar

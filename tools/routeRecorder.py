@@ -312,7 +312,13 @@ class RouteRecorder():
 
         # Get minimap from game window
         if self.is_first_frame:
-            x, y, w, h = get_minimap_loc_size(self.img_frame)
+            use_fixed_ratios = self.cfg["minimap"].get("use_fixed_ratios", False)
+            rect_ratios = self.cfg["minimap"].get("rect_ratios", None)
+            x, y, w, h = get_minimap_loc_size(
+                self.img_frame,
+                use_fixed_ratios=use_fixed_ratios,
+                rect_ratios=rect_ratios
+            )
             # Discard 1 pixel boundary of the minimap
             x += 1
             y += 1

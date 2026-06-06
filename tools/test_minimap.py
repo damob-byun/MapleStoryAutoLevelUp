@@ -86,21 +86,48 @@ def main():
                        "캡처 흰색이 254/253 으로 어긋났을 가능성 (안티앨리어싱/색프로파일). "
                        "get_minimap_loc_size 의 흰색 임계값을 낮춰야 할 수 있습니다.")
 
-    # 6) 미니맵 인식 시도 (macOS 완화 파라미터)
+    # 6) 미니맵 인식 시도 (macOS 완화 파라미터 + 고정 비율 옵션 연동)
+    use_fixed_ratios = cfg["minimap"].get("use_fixed_ratios", False)
+    rect_ratios = cfg["minimap"].get("rect_ratios", None)
+    logger.info(f"config - use_fixed_ratios: {use_fixed_ratios}, rect_ratios: {rect_ratios}")
+
+    # 자동 테두리 감지 결과 진단
+    auto_result = get_minimap_loc_size(
+        img_frame,
+        min_size=80,
+        search_region_ratio=0.5,
+        min_border_sides=3,
+        border_ratio=0.8,
+        use_fixed_ratios=False,
+    )
+    if auto_result is not None:
+        ax, ay, aw, ah = auto_result
+        logger.info(f"🔍 자동 미니맵 테두리 감지 성공: x={ax}, y={ay}, w={aw}, h={ah}")
+        if ah < 120:
+            logger.warning("⚠️ 감지된 미니맵의 세로 크기가 120px 미만입니다. 미니맵이 접혀있거나(collapsed) 크기가 작아진 상태일 수 있습니다.")
+            logger.warning("   인게임에서 미니맵의 오른쪽 아래 모서리를 드래그해 키우거나, M키를 눌러 기본 정상 크기로 확장하세요.")
+    else:
+        logger.warning("❌ 자동 미니맵 테두리 감지 실패. (인게임에서 미니맵이 꺼져 있거나, 접혀있어 흰 테두리가 완성되지 않았을 수 있습니다.)")
+
+    # 설정의 use_fixed_ratios 및 rect_ratios를 반영하여 인식 시도
     result = get_minimap_loc_size(
         img_frame,
         min_size=80,
         search_region_ratio=0.5,
         min_border_sides=3,
         border_ratio=0.8,
+        use_fixed_ratios=use_fixed_ratios,
+        rect_ratios=rect_ratios,
     )
     if result is None:
-        logger.error("❌ get_minimap_loc_size: 미니맵을 찾지 못함")
+        logger.error("❌ get_minimap_loc_size (최종 설정): 미니맵을 찾지 못함")
         logger.info("→ screenshot/diag_resized.png 를 열어 좌상단에 미니맵이 "
                     "흰 테두리와 함께 또렷이 보이는지 확인하세요.")
     else:
         x, y, w, h = result
-        logger.info(f"✅ 미니맵 발견: x={x}, y={y}, w={w}, h={h}")
+        logger.info(f"✅ 미니맵 발견 (최종 설정): x={x}, y={y}, w={w}, h={h}")
+        if use_fixed_ratios:
+            logger.info("   (고정 비율 크롭 모드가 활성화되어 있습니다.)")
         viz = img_frame.copy()
         cv2.rectangle(viz, (x, y), (x+w, y+h), (0, 0, 255), 2)
         cv2.imwrite("screenshot/diag_minimap.png", viz)

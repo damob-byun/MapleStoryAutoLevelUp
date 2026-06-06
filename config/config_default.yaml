@@ -97,6 +97,13 @@ party_red_bar:
   create_party_button_cn_thres: 0.04   # 📏 파티 생성 버튼 매칭 임계값 (중국어)
   create_party_button_eng_thres: 0.04  # 📏 파티 생성 버튼 매칭 임계값 (영어)
 
+player_pos:
+  # 🧍 플레이어 화면 위치
+  # 메이플은 카메라가 플레이어를 화면 중앙에 고정한다. nametag/party_red_bar
+  # 검출이 불가능한 환경(예: macOS, 파티 미가입)에서는 화면 중앙을 그대로
+  # 플레이어 위치로 쓰는 게 가장 안정적이다.
+  use_screen_center: False  # ✅ True 면 loc_player = 화면 중앙, 검출 건너뜀 (nametag/party_red_bar 무시)
+
 nametag:
   # 🏷️ 네임택 인식
   # ⚠️ 이 기능은 deprecated. 파티 빨간 바 감지가 훨씬 안정적입니다.
@@ -216,6 +223,13 @@ minimap:
   other_player_color: [0, 0, 255] # 🔴 미니맵의 빨간 타 유저 점 BGR 값
   debug_window_upscale: 4         # 🔍 루트 디버그 이미지의 확대 배율 (시각화 전용)
   offset: [0, 0]                  # 📐 글로벌 서버에서 플레이하는 게 아니라면 설정하지 말 것
+  # 🔍 자동 미니맵 인식 보강 설정
+  search_region_ratio: 0.5        # 📐 미니맵을 탐색할 화면 영역 비율 (0.5 = 좌상단 1/4 영역만 탐색)
+  min_border_sides: 3             # 📐 미니맵 외곽선 감지 시 허용할 최소 외곽선 면의 개수 (3 = 한 면이 깨져도 감지 가능)
+  border_ratio: 0.8               # 📐 각 외곽선이 흰색선으로 차 있어야 하는 최소 비율
+  min_size: 80                    # 📐 미니맵 감지 최소 크기 (픽셀)
+  use_fixed_ratios: False         # 📐 흰색 테두리 감지 대신 화면 크기 대비 고정 비율 크롭 사용 여부
+  rect_ratios: [0.010, 0.053, 0.180, 0.124] # 📐 고정 비율 크롭 영역 [x_ratio, y_ratio, w_ratio, h_ratio] (화면 좌상단 맵 콘텐츠)
 
 patrol:
   # 🚶‍♂️ 순찰 모드

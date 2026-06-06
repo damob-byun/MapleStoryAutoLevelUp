@@ -28,6 +28,7 @@ from src.utils.common import (
     find_pattern_sqdiff, draw_rectangle, screenshot,
     get_minimap_loc_size, get_player_location_on_minimap,
     to_opencv_hsv, load_yaml, override_cfg, is_mac, load_image,
+    is_img_expected_ratio,
 )
 from src.input.KeyBoardListener import KeyBoardListener
 # macOS 전용 캡처러 사용
@@ -177,10 +178,16 @@ class RouteRecorder():
         # Cut the title bar and resize raw frame to (1296, 759)
         frame_no_title = self.frame[self.cfg["game_window"]["title_bar_height"]:, :]
 
-        # Make sure the window ratio is as expected
-        if self.cfg["game_window"]["size"] != frame_no_title.shape[:2]:
-            text = f"Unexpeted window size: {frame_no_title.shape[:2]} "\
-                    f"(expect {self.cfg['game_window']['size']})\n"
+        # Make sure the window ratio is as expected.
+        # Accept any window size whose aspect ratio matches game_window.size
+        # (within ratio_tolerance); the frame is resized to WINDOW_WORKING_SIZE
+        # below, so only the ratio matters -- not the exact pixel size.
+        if not is_img_expected_ratio(frame_no_title, self.cfg):
+            h, w = frame_no_title.shape[:2]
+            h_win, w_win = self.cfg["game_window"]["size"]
+            text = f"Unexpeted window ratio: {frame_no_title.shape[:2]} "\
+                    f"(ratio {w/h:.3f}, expect ~{w_win/h_win:.3f} "\
+                    f"from {self.cfg['game_window']['size']})\n"
             text += "Please use windowed mode & smallest resolution."
             logger.error(text)
             return
@@ -337,14 +344,18 @@ class RouteRecorder():
 
         # Get minimap from game window
         if self.is_first_frame:
-            # macOS: 미니맵 흰 테두리가 작고(960px 캡처를 1296 으로 확대),
-            # 지도 콘텐츠가 하단 테두리에 닿아 깨지므로 완화된 검출 파라미터 사용.
+            # 미니맵 검출 파라미터는 config(minimap) 우선, 없으면 macOS 완화 기본값.
+            # use_fixed_ratios=True 면 흰 테두리 검출 대신 고정 비율로 크롭 →
+            # 엔진(MapleStoryAutoLevelUp)과 동일한 박스를 써야 map.png 가 일치함.
+            mm_cfg = self.cfg["minimap"]
             minimap_box = get_minimap_loc_size(
                 self.img_frame,
-                min_size=80,
-                search_region_ratio=0.5,   # 좌상단 1/4 영역만 탐색
-                min_border_sides=3,        # 4면 중 3면만 흰색이면 통과
-                border_ratio=0.8,          # 각 테두리 80% 이상 흰색
+                min_size=mm_cfg.get("min_size", 80),
+                search_region_ratio=mm_cfg.get("search_region_ratio", 0.5),  # 좌상단 1/4 영역만 탐색
+                min_border_sides=mm_cfg.get("min_border_sides", 3),          # 4면 중 3면만 흰색이면 통과
+                border_ratio=mm_cfg.get("border_ratio", 0.8),                # 각 테두리 80% 이상 흰색
+                use_fixed_ratios=mm_cfg.get("use_fixed_ratios", False),
+                rect_ratios=mm_cfg.get("rect_ratios", None),
             )
             if minimap_box is None:
                 # 미니맵을 못 찾음. 보통 두 가지 원인:

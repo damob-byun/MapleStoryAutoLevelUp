@@ -24,6 +24,7 @@ eng_to_ko:
   disposed_flower_garden: 버려진 화원
   mu_Lung_wild_bear_area_2: 야생곰의 영토2
   forest_of_dead_trees_2: 죽숲2
+  black_kentauros_area: 검은 켄타우로스의 영역
   # monster
   coolie_zombie: 쿨리좀비
   zombie_lupin: 좀비루팡
@@ -81,4 +82,4 @@ map_mobs_mapping:
   disposed_flower_garden: [nependeath, dark_nependeath]
   mu_Lung_wild_bear_area_2: [grizzly, panda]
   forest_of_dead_trees_2: [coolie_zombie]
-  black_kentaurus_area: [black_kentaurus]
+  black_kentauros_area: [black_kentaurus]
