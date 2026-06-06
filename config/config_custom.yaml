@@ -3,6 +3,7 @@ aoe_skill:
 bot:
   attack: aoe_skill
   map: black_kentauros_area
+  mode: patrol
 buff_skill:
   cooldown:
   - 200
@@ -12,7 +13,6 @@ buff_skill:
   - shift
 health_monitor:
   add_hp_percent: 70
-  add_mp_percent: 0
   force_heal: true
 key:
   add_hp: a
@@ -27,5 +27,3 @@ patrol:
 system:
   fps_limit_route_recorder: 20
   fps_limit_window_capturor: 20
-teleport:
-  is_use_teleport_to_walk: true

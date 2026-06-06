@@ -75,7 +75,7 @@ teleport:
   # ⚠️ 아직 실험적 기능입니다! 활성화 시 예기치 못한 문제가 생길 수 있음.
   is_use_teleport_to_walk: False  # ✅ 걷는 대신 텔레포트 사용 (경로가 부정확해질 수 있음)
   cooldown: 1                     # ⏱️ 텔레포트 스킬 쿨다운 (초)
-  cooldown_random: 0              # 🎲 쿨다운에 더할 랜덤 지터(초). 0~이 값 사이 무작위 추가 (매크로 감지 회피)
+  cooldown_random: 0.0            # 🎲 쿨다운에 더할 랜덤 지터(초). 0~이 값 사이 무작위 추가 (매크로 감지 회피)
   keep_route_jump: True           # 🦘 루트가 점프/등반(jump,up,down)을 지시하면 텔레포트로 덮어쓰지 않고 점프/올라가기 수행
 
 edge_teleport:
@@ -103,6 +103,8 @@ player_pos:
   # 검출이 불가능한 환경(예: macOS, 파티 미가입)에서는 화면 중앙을 그대로
   # 플레이어 위치로 쓰는 게 가장 안정적이다.
   use_screen_center: False  # ✅ True 면 loc_player = 화면 중앙, 검출 건너뜀 (nametag/party_red_bar 무시)
+  fallback_center_on_fail: False  # ✅ nametag 매칭이 fallback_timeout 초 이상 실패하면 화면 중앙으로 폴백
+  fallback_timeout: 1.0           # ⏱️ 이 시간(초) 동안 nametag 매칭 실패 시 폴백 발동
 
 nametag:
   # 🏷️ 네임택 인식
@@ -239,7 +241,8 @@ patrol:
   range: [0.2, 0.8]               # (구) 좌우 왕복 경계 — 루트 기반으로 바뀌며 미사용
   turn_point_thres: 10            # (구) 회전 확정 프레임 수 — 미사용
   patrol_attack_interval: 2.5     # 🕒 주기 공격 간 시간 간격(초)
-  patrol_attack_interval_random: 0  # 🎲 공격 간격에 더할 랜덤 지터(초). 0~이 값 사이 무작위 추가 (매크로 감지 회피)
+  patrol_attack_interval_random: 0.0  # 🎲 공격 간격에 더할 랜덤 지터(초). 0~이 값 사이 무작위 추가 (매크로 감지 회피)
+  disable_nametag: False          # 🏷️ 패트롤 모드일 때 네임태그 검출 우회 여부 (FPS 성능 향상용)
   # 🟢 플레이어 주변 HP 바 검출
   # 화면 중앙(=플레이어 주변) 박스 안에서 몬스터 HP 바(초록 가로 바)가 보이면
   # "몹이 있다"고 보고, 사라질 때까지 제자리에서 스킬만 시전(이동 멈춤).
@@ -254,6 +257,10 @@ patrol:
   hp_bar_min_aspect: 2.0          # 📏 HP 바 최소 가로/세로 비. 정사각형 초록 잡음 제거용
   hp_bar_min_count: 3             # 🔢 이 개수 이상의 HP 바가 보일 때만 "몹 있음"으로 판정.
                                   #    캐릭터 자신의 스킬 이펙트(초록 섬광)가 1~2개로 잡히는 오탐 회피
+  hp_bar_action: "attack_hold"    # ⚔️ 몹 HP 바 검출 시 공격 방식 ("attack_hold" 또는 "attack")
+  hp_bar_hold_duration: 1.0       # 🕒 몹 HP 바 검출 시 제자리 공격 유지 시간 (초)
+
+
 
 route_recoder:
   # 🎥 루트 레코더

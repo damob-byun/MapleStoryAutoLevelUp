@@ -175,6 +175,11 @@ class KeyBoardController():
         Set keyboard command
         '''
         self.cmd_left_right, self.cmd_up_down, self.cmd_action = new_command.split()
+        if self.cmd_up_down == "up":
+            # 회색(none up none) 등 위로 올라가는 커맨드가 입력되면 좌우 키를 즉시 물리적으로 뗀다
+            key_up("left")
+            key_up("right")
+            self.cmd_left_right = "none"
 
     def is_game_window_active(self):
         '''

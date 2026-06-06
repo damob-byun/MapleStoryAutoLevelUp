@@ -14,6 +14,8 @@ class PatrolState(State):
         super().__init__(name, bot)
         self.bot = bot
         self.next_attack_delay = None # 다음 공격까지 목표 간격(랜덤 지터 포함)
+        self.t_hp_hold_until = 0.0    # 몹 HP 바 감지 시 공격 유지 종료 시각
+
 
     def _roll_attack_delay(self):
         '''공격 간격에 랜덤 지터를 더해 매크로 감지 회피'''
@@ -52,6 +54,10 @@ class PatrolState(State):
 
         hp_detect = bot.cfg["patrol"].get("hp_bar_detect", True)
 
+        if hp_detect and bot.has_enemy_hp_bar_near_player():
+            duration = bot.cfg["patrol"].get("hp_bar_hold_duration", 1.0)
+            self.t_hp_hold_until = time.time() + duration
+
         if is_traverse:
             # 점프/로프 구간: 멈추지 말고 통과 (HP 바 검출보다 통과 우선).
             # jump_hold(점프키 홀드)는 "점프 색상코드" 와 "위로 오르는 로프(up)" 에만 적용.
@@ -67,16 +73,17 @@ class PatrolState(State):
             elif bot.cmd_action == "jump" or bot.cmd_move_y == "up":
                 bot.cmd_action = "jump_hold"
             # else: down 등은 루트 명령 그대로 유지(점프 없음)
-        elif hp_detect and bot.has_enemy_hp_bar_near_player():
-            # 플레이어 주변에 몹 HP 바가 (min_count 개 이상) 보이면:
-            # 초록 HP 가 사라질 때까지 제자리에서 AOE 키를 "누른 채 유지"(attack_hold).
+        elif time.time() < self.t_hp_hold_until:
+            # 플레이어 주변에 몹 HP 바가 감지되었거나 1초 홀드가 진행 중인 경우:
+            # 초록 HP 가 사라질 때까지 제자리에서 스킬 시전 방식에 따라 공격.
             bot.cmd_move_x = "none"
             bot.cmd_move_y = "none"
-            bot.cmd_action = "attack_hold"
-            # 홀드 중엔 주기 공격 타이머를 계속 리셋 → 홀드가 끝나도
+            bot.cmd_action = bot.cfg["patrol"].get("hp_bar_action", "attack_hold")
+            # 홀드나 공격 중엔 주기 공격 타이머를 계속 리셋 → 끝나도
             # 곧바로 추가 단발 AOE 가 나가지 않도록 한다.
             bot.t_last_attack = time.time()
             self.next_attack_delay = None
+
         else:
             # 평소: 루트 따라 이동 + 주기 공격
             self._attack_on_interval()

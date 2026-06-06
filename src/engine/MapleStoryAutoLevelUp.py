@@ -61,6 +61,7 @@ class MapleStoryAutoBot:
         self.color_code_up_down = {} # Color code only contain 'up' and 'down'
         self.thread_auto_bot = None # thread for running autobot
         self.cmd_move_x = "none" # "left" "right"
+        self.prev_move_x = "right" # "left" "right" (stores previous direction for teleport fallback)
         self.cmd_move_y = "none" # "up" "down"
         self.cmd_action = "none" # "jump" "attack" ....
         # Signals (for UI)
@@ -77,6 +78,7 @@ class MapleStoryAutoBot:
         self.is_frame_done = False #
         # Coordinate (top-left coordinate)
         self.loc_nametag = (0, 0) # nametag location on game screen
+        self.t_last_nametag_match = 0.0 # last time nametag matched below diff_thres
         self.loc_party_red_bar = (0, 0) # party red bar location on game screen
         self.loc_minimap = (0, 0) # minimap location on game screen
         self.loc_player = (0, 0) # player location on game screen
@@ -439,6 +441,7 @@ class MapleStoryAutoBot:
         # Only update nametag location when score is good enough
         if score < self.cfg["nametag"]["diff_thres"]:
             self.loc_nametag = loc_nametag
+            self.t_last_nametag_match = time.time()
 
         loc_player = (
             self.loc_nametag[0] + w // 2,
@@ -1431,6 +1434,13 @@ class MapleStoryAutoBot:
     def update_cmd_by_route(self):
         # get color code from img_route
         color_code, color_code_up_down = self.get_nearest_color_code()
+
+        # Check if the closest matching command is from a green pixel (0, 127, 0)
+        is_green = False
+        if color_code and color_code.get("color") == (0, 127, 0):
+            if not color_code_up_down or color_code["distance"] < color_code_up_down["distance"]:
+                is_green = True
+
         # Use color_code and color_code_up_down to complement each other
         # To prevent character stuck at the end of ladder, we use two color color pixels
         # and let them complement with each other, to ensure smoothy ladder climbing
@@ -1449,6 +1459,14 @@ class MapleStoryAutoBot:
             self.cmd_move_x, self.cmd_move_y, self.cmd_action = color_code["command"].split()
         elif color_code_up_down:
             self.cmd_move_x, self.cmd_move_y, self.cmd_action = color_code_up_down["command"].split()
+
+        # If green is detected, override cmd_move_x to use the previous direction (so it teleports in the direction it was going)
+        if is_green:
+            self.cmd_move_x = self.prev_move_x
+
+        # Update previous horizontal moving direction if currently moving left/right (and not on green line)
+        if not is_green and self.cmd_move_x in ("left", "right"):
+            self.prev_move_x = self.cmd_move_x
 
         # 루트가 점프/등반(jump, up, down)을 지시했는지 확인.
         # 점프 구간에서는 텔레포트가 켜져 있어도 점프/올라가기를 우선(텔레포트로 덮어쓰지 않음).
@@ -1697,11 +1715,25 @@ class MapleStoryAutoBot:
         # 메이플은 카메라가 플레이어를 화면 중앙에 고정하므로, nametag/party_red_bar
         # 검출이 불가능한 환경(예: macOS, 파티 미가입)에서는 화면 중앙을 그대로
         # 플레이어 위치로 쓴다. (use_screen_center=True 시 검출 건너뜀)
-        if self.cfg.get("player_pos", {}).get("use_screen_center", False):
-            h_frame, w_frame = self.img_frame.shape[:2]
-            loc_player = (w_frame // 2, h_frame // 2)
+        pp = self.cfg.get("player_pos", {})
+        h_frame, w_frame = self.img_frame.shape[:2]
+        screen_center = (w_frame // 2, h_frame // 2)
+
+        is_patrol_disable_nametag = (
+            self.cfg["bot"]["mode"] == "patrol" and
+            self.cfg["patrol"].get("disable_nametag", False)
+        )
+
+        if pp.get("use_screen_center", False) or is_patrol_disable_nametag:
+            loc_player = screen_center
         elif self.cfg["nametag"]["enable"]:
             loc_player = self.get_player_location_by_nametag()
+            # 네임택 매칭이 일정 시간 이상 실패하면 화면 중앙으로 폴백한다.
+            # (매칭 실패 시 loc_player 가 (0,0) 근처로 튀어 몹 검색 박스가
+            #  미니맵 쪽에 생기는 문제 방지)
+            if pp.get("fallback_center_on_fail", False) and \
+               time.time() - self.t_last_nametag_match > pp.get("fallback_timeout", 1.0):
+                loc_player = screen_center
         else:
             loc_player, loc_party_red_bar = self.get_player_location_by_party_red_bar()
             if loc_party_red_bar is not None:

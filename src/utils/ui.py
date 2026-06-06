@@ -145,10 +145,21 @@ def create_advance_setting_gbox(title, cfg, comments=None, comments_section=None
                 hbox.addWidget(line)
 
             def update_list():
-                cfg[title][key] = [
-                    float(e.text()) if isinstance(v, float) else int(e.text())
-                    for e, v in zip(edits, value) if e.text() != ''
-                ]
+                new_list = []
+                for e, v in zip(edits, value):
+                    txt = e.text()
+                    if txt != '':
+                        try:
+                            if '.' in txt:
+                                new_list.append(float(txt))
+                            else:
+                                new_list.append(int(txt))
+                        except ValueError:
+                            try:
+                                new_list.append(float(txt))
+                            except ValueError:
+                                new_list.append(txt)
+                cfg[title][key] = new_list
 
             for edit in edits:
                 edit.textChanged.connect(update_list)
@@ -158,12 +169,23 @@ def create_advance_setting_gbox(title, cfg, comments=None, comments_section=None
 
         elif isinstance(value, (int, float)):
             line = QLineEdit(str(value))
-            validator = QDoubleValidator() if isinstance(value, float) else QIntValidator()
+            # Also allow float values even if value is technically an int,
+            # so the user can change integers to floats in the GUI.
+            validator = QDoubleValidator()
             line.setValidator(validator)
             line.setToolTip(tooltip)
             def update_value(val):
                 if val != '':
-                    cfg[title][key] = float(val) if isinstance(value, float) else int(val)
+                    try:
+                        if '.' in val:
+                            cfg[title][key] = float(val)
+                        else:
+                            cfg[title][key] = int(val)
+                    except ValueError:
+                        try:
+                            cfg[title][key] = float(val)
+                        except ValueError:
+                            pass
             line.textChanged.connect(update_value)
             form_layout.addRow(QLabel(key), line)
             gbox._field_refs[key] = line

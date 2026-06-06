@@ -16,22 +16,30 @@ health_monitor:
   exp_bar_rect: [592, 62, 158, 21]
 
 player_pos:
-  # macOS: 파티 빨간바/nametag 검출이 불안정 → 플레이어를 화면 중앙으로 고정.
-  # (카메라가 플레이어를 중앙에 두므로 normal 모드 몹 검색 박스가 캐릭터 주변에 생김)
+  # macOS: nametag 로 플레이어를 찾되, 매칭 실패가 지속되면 화면 중앙으로 폴백.
+  # ⚠️ nametag 매칭 실패 시 전역 탐색이 ~216ms/frame 라 느려질 수 있음.
+  #    느리면 use_screen_center: True 로 바꿔 nametag 를 끄고 항상 화면 중앙 사용.
   use_screen_center: False
+  fallback_center_on_fail: True
+  fallback_timeout: 1.0
 
 nametag:
   enable: True
-  name: "name"
+  name: "name"          # nametag/name.png 로드 (78x15, 실제 프레임에서 직접 크롭한 스케일)
+  mode: "grayscale"     # 🧪 grayscale 매칭 (초록 0,255,0 배경은 마스킹됨)
+  offset: [-50, 110]    # 🎯 네임택 위 ~110px 가 캐릭터 중심 (y 만 사용됨)
 
 monster_detect:
   # macOS 캡처에선 기본값 "contour_only" 가 coolie_zombie 를 거의 못 잡음
   # (최저 score ~0.8+, 검출 임계값 미달). color/grayscale 는 ~0.2 로 잘 잡힘.
   # → "color"(가장 정확) 사용. 느리면 "grayscale" 로 교체.
   mode: "grayscale"
-  # 화면 속 몹(~45px)이 background UI/지형과 섞여도 오탐이 적도록 약간 엄격하게.
-  # 실제 몹 매칭 score ~0.2, 첫 오탐 ~0.4 사이라 0.4 로 컷.
-  diff_thres: 0.7
+  # ⚠️ 매우 중요: grayscale 은 res<=diff_thres 인 "모든 픽셀"을 검출로 잡는다.
+  # 임계값이 느슨하면(0.7) 숲 배경에서 47만 곳이 매칭 → NMS(O(n²))가 30초나
+  # 걸려 사실상 멈춤("수백개 감지 + 느림"의 원인). 실제 black_kentaurus 매칭
+  # score 는 ~0.16~0.19 이고, 0.31 부터 오탐이 급증(절벽)하므로 0.3 으로 컷.
+  #   0.3 → 진짜 몹만 검출(45ms). 검출이 가끔 누락되면 0.31~0.32 로만 올릴 것.
+  diff_thres: 0.3
   hp_bar_color: [90, 201, 108] # (B,G,R)
   # macOS: 작은 창이라 화면 속 몹이 템플릿보다 작음 → 템플릿을 미리 축소.
   # 화면 속 coolie_zombie 몸높이 ~45px / 오피셜 템플릿 ~90px ≈ 0.5.
@@ -57,6 +65,7 @@ minimap:
   rect_ratios: [0.010, 0.053, 0.180, 0.124]  # use_fixed_ratios:True 일 때만 사용 (비권장)
 
 patrol:
+  disable_nametag: True    # 🏷️ 패트롤 모드일 때 네임태그 검출 우회 여부 (FPS 성능 향상용)
   # 🟢 주변 HP 바 검출 모양 필터 (초록 잎/풀 오검출 억제)
   # 검은 켄타우로스 지역처럼 배경이 온통 초록인 맵에선 "관계형 초록"이
   # 잎사귀/덤불을 HP 바로 오검출함(완화 필터로 한 프레임에 40+ 가짜 바).
@@ -67,6 +76,10 @@ patrol:
   hp_bar_min_w: 12         # 📏 HP 바 최소 너비(px)
   hp_bar_min_aspect: 4.0   # 📏 최소 가로/세로 비. 잎사귀의 작은 초록 덩어리 제거
   hp_bar_min_count: 3      # 🔢 이 개수 이상일 때만 "몹 있음" 판정
+  hp_bar_action: "attack_hold"
+  hp_bar_hold_duration: 1.0
+
+
 
 party_red_bar:
   lower_red: [4, 80, 50] # ❤️ HSV, darker red of party health bar
