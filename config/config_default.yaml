@@ -259,6 +259,12 @@ patrol:
                                   #    캐릭터 자신의 스킬 이펙트(초록 섬광)가 1~2개로 잡히는 오탐 회피
   hp_bar_action: "attack_hold"    # ⚔️ 몹 HP 바 검출 시 공격 방식 ("attack_hold" 또는 "attack")
   hp_bar_hold_duration: 1.0       # 🕒 몹 HP 바 검출 시 제자리 공격 유지 시간 (초)
+  # 🚨 초록 HP 바로 인한 정지가 너무 오래 지속되면 끼임/오인식으로 판정
+  # 초록 HP 가 계속 잡혀 제자리 정지가 hp_bar_hold_max_duration 초 이상 연속되면
+  # (실제 몹이 안 죽거나, 초록 지형/잎을 HP 바로 오인식한 경우) 끼였다고 보고
+  # 해당 시간 동안 HP 검출을 무시한 채 루트로 빠져나간다.
+  hp_bar_hold_max_duration: 5.0   # 🕒 연속 정지 허용 최대 시간(초). 초과 시 끼임/오인식 판정
+  hp_bar_stuck_cooldown: 3.0      # 🕒 끼임 판정 후 HP 검출을 무시하고 이동하는 쿨다운(초)
 
 
 

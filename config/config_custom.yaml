@@ -12,7 +12,8 @@ buff_skill:
   - d
   - shift
 health_monitor:
-  add_hp_percent: 70
+  add_hp_percent: 90
+  add_mp_percent: 30
   force_heal: true
 key:
   add_hp: a
@@ -21,9 +22,16 @@ key:
   jump: alt
   return_home: ''
   teleport: space
+nametag:
+  enable: false
 patrol:
   patrol_attack_interval: 1.0
   patrol_attack_interval_random: 0.6
 system:
+  fps_limit_main: 20
   fps_limit_route_recorder: 20
   fps_limit_window_capturor: 20
+teleport:
+  cooldown: 0
+  cooldown_random: 1
+  is_use_teleport_to_walk: true
